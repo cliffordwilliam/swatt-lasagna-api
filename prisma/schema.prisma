@@ -9,25 +9,31 @@ generator client {
 }
 
 model Role {
-  id    String @id @default(uuid())
-  name  String @unique
-  users User[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  password String
-  role     Role   @relation(fields: [roleId], references: [id])
-  roleId   String
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Item {
-  id     String          @id @default(uuid())
-  nama   String
-  tipe   String
-  harga  Float
-  orders OrdersOnItems[]
+  id        String          @id @default(uuid())
+  nama      String
+  tipe      String
+  harga     Float
+  orders    OrdersOnItems[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Order {
@@ -46,6 +52,8 @@ model Order {
   pembayaran       Pembayaran      @relation(fields: [pembayaranId], references: [id])
   pembayaranId     String
   items            OrdersOnItems[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }
 
 model OrdersOnItems {
@@ -59,29 +67,37 @@ model OrdersOnItems {
 }
 
 model Pembeli {
-  id     String  @id @default(uuid())
-  nama   String  @unique
-  alamat String  @unique
-  noHp   String  @unique
-  orders Order[]
+  id        String   @id @default(uuid())
+  nama      String   @unique
+  alamat    String   @unique
+  noHp      String   @unique
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Penerima {
-  id     String  @id @default(uuid())
-  nama   String  @unique
-  alamat String  @unique
-  noHp   String  @unique
-  orders Order[]
+  id        String   @id @default(uuid())
+  nama      String   @unique
+  alamat    String   @unique
+  noHp      String   @unique
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Pembayaran {
-  id     String  @id @default(uuid())
-  name   String  @unique
-  orders Order[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PickupDelivery {
-  id     String  @id @default(uuid())
-  name   String  @unique
-  orders Order[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
