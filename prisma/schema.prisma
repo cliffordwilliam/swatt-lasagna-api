@@ -7,3 +7,81 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  role     Role   @relation(fields: [roleId], references: [id])
+  roleId   String
+}
+
+model Item {
+  id     String          @id @default(uuid())
+  nama   String          @unique
+  tipe   String
+  harga  Float
+  orders OrdersOnItems[]
+}
+
+model Order {
+  id               String          @id @default(uuid())
+  pembeli          Pembeli         @relation(fields: [pembeliId], references: [id])
+  pembeliId        String
+  penerima         Penerima        @relation(fields: [penerimaId], references: [id])
+  penerimaId       String
+  tanggalOrder     DateTime
+  tanggalKirim     DateTime
+  totalPembelian   Float
+  pickupDelivery   PickupDelivery  @relation(fields: [pickupDeliveryId], references: [id])
+  pickupDeliveryId String
+  ongkir           Float
+  grandTotal       Float
+  pembayaran       Pembayaran      @relation(fields: [pembayaranId], references: [id])
+  pembayaranId     String
+  items            OrdersOnItems[]
+}
+
+model OrdersOnItems {
+  quantity Int
+  order    Order  @relation(fields: [orderId], references: [id])
+  orderId  String
+  item     Item   @relation(fields: [itemId], references: [id])
+  itemId   String
+
+  @@id([orderId, itemId])
+}
+
+model Pembeli {
+  id     String  @id @default(uuid())
+  nama   String  @unique
+  alamat String  @unique
+  noHp   String  @unique
+  orders Order[]
+}
+
+model Penerima {
+  id     String  @id @default(uuid())
+  nama   String  @unique
+  alamat String  @unique
+  noHp   String  @unique
+  orders Order[]
+}
+
+model Pembayaran {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  orders Order[]
+}
+
+model PickupDelivery {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  orders Order[]
+}
