@@ -24,7 +24,7 @@ model User {
 
 model Item {
   id     String          @id @default(uuid())
-  nama   String          @unique
+  nama   String
   tipe   String
   harga  Float
   orders OrdersOnItems[]

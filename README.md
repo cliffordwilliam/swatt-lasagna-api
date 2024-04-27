@@ -76,6 +76,12 @@ Nest is [MIT licensed](LICENSE).
 
 ## Migrating
 
+Do not forget to generate first
+
+```bash
+npx prisma generate
+```
+
 To remote
 
 ```bash
