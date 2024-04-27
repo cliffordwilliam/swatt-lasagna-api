@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 
 @Injectable()
 export class ItemsService {
+  constructor(private prisma: PrismaService) {}
   create(createItemDto: CreateItemDto) {
     return {
       message: 'This action adds a new item',
@@ -12,7 +14,7 @@ export class ItemsService {
   }
 
   findAll() {
-    return `This action returns all items`;
+    return this.prisma.item.findMany();
   }
 
   findOne(id: number) {
