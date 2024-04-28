@@ -108,7 +108,7 @@ To local
 npm run start:local
 ```
 
----
+## Seeding
 
 Seeding script is ran when you migrate, and when there is conflict. So I decided to run it once only. The seed script will still be there but the logic will be commented out
 
