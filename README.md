@@ -107,3 +107,23 @@ To local
 ```bash
 npx run start:local
 ```
+
+---
+
+Seeding script is ran when you migrate, and when there is conflict. So I decided to run it once only. The seed script will still be there but the logic will be commented out
+
+I just find it tedious that when someone patch the item, then I also need to update the seeding item values too to prevent me overriding the patched data with the auto seed during future migrate
+
+If you want to update again, just patch the data
+
+Seed local
+
+```bash
+dotenv -e .env.local -- npx prisma db seed
+```
+
+Seed remote
+
+```bash
+npx prisma db seed
+```
