@@ -137,5 +137,5 @@ npx prisma db seed
 - [x] Item basic crud
 - [ ] Item authentication
 - [ ] Item authorization
-- [ ] Error handler
+- [x] Error handler
 - [ ] Pagination
