@@ -127,18 +127,30 @@ async function main() {
   //   }
   //   console.log('Seeded items:', createdItems);
 
-  const Pembayarans = [
-    { name: 'Tunai' },
-    { name: 'Kartu Kredit' },
-    { name: 'Qr' },
-    { name: 'Transfer' },
-  ];
+  //   const Pembayarans = [
+  //     { name: 'Tunai' },
+  //     { name: 'Kartu Kredit' },
+  //     { name: 'Qr' },
+  //     { name: 'Transfer' },
+  //   ];
+
+  //   const createdItems = [];
+
+  //   for (const pembayaran of Pembayarans) {
+  //     const createdItem = await prisma.pembayaran.create({
+  //       data: pembayaran,
+  //     });
+  //     createdItems.push(createdItem);
+  //   }
+  //   console.log('Seeded items:', createdItems);
+
+  const Roles = [{ name: 'Admin' }, { name: 'Karyawan' }];
 
   const createdItems = [];
 
-  for (const pembayaran of Pembayarans) {
-    const createdItem = await prisma.pembayaran.create({
-      data: pembayaran,
+  for (const role of Roles) {
+    const createdItem = await prisma.role.create({
+      data: role,
     });
     createdItems.push(createdItem);
   }
