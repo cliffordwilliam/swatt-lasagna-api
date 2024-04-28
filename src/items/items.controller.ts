@@ -8,37 +8,37 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ItemsService } from './items.service';
-import { Prisma } from '@prisma/client';
+import { Item, Prisma } from '@prisma/client';
 
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Post()
-  create(@Body() createItemDto: Prisma.ItemCreateInput) {
+  async create(@Body() createItemDto: Prisma.ItemCreateInput): Promise<Item> {
     return this.itemsService.create(createItemDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Item[]> {
     return this.itemsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<Item | null> {
     return this.itemsService.findOne(id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateItemDto: Prisma.ItemUpdateInput,
-  ) {
+  ): Promise<Item> {
     return this.itemsService.update(id, updateItemDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<Item> {
     return this.itemsService.remove(id);
   }
 }

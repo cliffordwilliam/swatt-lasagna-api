@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Item, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ItemsService {
   constructor(private prisma: PrismaService) {}
-  create(createItemDto: Prisma.ItemCreateInput) {
+  async create(createItemDto: Prisma.ItemCreateInput): Promise<Item> {
     return this.prisma.item.create({
       data: createItemDto,
     });
   }
 
-  findAll() {
+  async findAll(): Promise<Item[]> {
     return this.prisma.item.findMany();
   }
 
-  findOne(id: string) {
+  async findOne(id: string): Promise<Item> {
     return this.prisma.item.findUnique({
       where: {
         id: id,
@@ -23,7 +23,10 @@ export class ItemsService {
     });
   }
 
-  update(id: string, updateItemDto: Prisma.ItemUpdateInput) {
+  async update(
+    id: string,
+    updateItemDto: Prisma.ItemUpdateInput,
+  ): Promise<Item> {
     return this.prisma.item.update({
       where: {
         id,
@@ -32,7 +35,7 @@ export class ItemsService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string): Promise<Item> {
     return this.prisma.item.delete({
       where: {
         id,
