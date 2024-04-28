@@ -99,13 +99,13 @@ dotenv -e .env.local -- npx prisma migrate dev --name [MIGRATION_NAME]
 To remote
 
 ```bash
-npx run start:dev
+npm run start:dev
 ```
 
 To local
 
 ```bash
-npx run start:local
+npm run start:local
 ```
 
 ---
