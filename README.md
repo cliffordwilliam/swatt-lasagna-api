@@ -127,3 +127,13 @@ Seed remote
 ```bash
 npx prisma db seed
 ```
+
+---
+
+## Todo list:
+
+- [x] Item basic crud
+- [ ] Item authentication
+- [ ] Item authorization
+- [ ] Error handler
+- [ ] Pagination
