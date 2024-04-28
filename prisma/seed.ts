@@ -104,24 +104,41 @@ async function main() {
   //   }
   //   console.log('Seeded items:', createdItems);
 
-  const pickupDeliveries = [
-    { name: 'Pickup' },
-    { name: 'Delivery' },
-    { name: 'Gojek' },
-    { name: 'Citytran' },
-    { name: 'Paxel' },
-    { name: 'Daytrans' },
-    { name: 'Baraya' },
-    { name: 'Lintas' },
-    { name: 'Bineka' },
-    { name: 'Jne' },
+  //   const pickupDeliveries = [
+  //     { name: 'Pickup' },
+  //     { name: 'Delivery' },
+  //     { name: 'Gojek' },
+  //     { name: 'Citytran' },
+  //     { name: 'Paxel' },
+  //     { name: 'Daytrans' },
+  //     { name: 'Baraya' },
+  //     { name: 'Lintas' },
+  //     { name: 'Bineka' },
+  //     { name: 'Jne' },
+  //   ];
+
+  //   const createdItems = [];
+
+  //   for (const pickupDelivery of pickupDeliveries) {
+  //     const createdItem = await prisma.pickupDelivery.create({
+  //       data: pickupDelivery,
+  //     });
+  //     createdItems.push(createdItem);
+  //   }
+  //   console.log('Seeded items:', createdItems);
+
+  const Pembayarans = [
+    { name: 'Tunai' },
+    { name: 'Kartu Kredit' },
+    { name: 'Qr' },
+    { name: 'Transfer' },
   ];
 
   const createdItems = [];
 
-  for (const pickupDelivery of pickupDeliveries) {
-    const createdItem = await prisma.pickupDelivery.create({
-      data: pickupDelivery,
+  for (const pembayaran of Pembayarans) {
+    const createdItem = await prisma.pembayaran.create({
+      data: pembayaran,
     });
     createdItems.push(createdItem);
   }
