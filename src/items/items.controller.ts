@@ -1,21 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
+import { Item } from '@prisma/client';
+import { CreateItemDto } from 'src/dto/create-item.dto';
+import { UpdateItemDto } from 'src/dto/update-item.dto';
 import { ItemsService } from './items.service';
-import { Item, Prisma } from '@prisma/client';
 
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Post()
-  async create(@Body() createItemDto: Prisma.ItemCreateInput): Promise<Item> {
+  async create(@Body() createItemDto: CreateItemDto): Promise<Item> {
     return this.itemsService.create(createItemDto);
   }
 
@@ -32,7 +34,7 @@ export class ItemsController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateItemDto: Prisma.ItemUpdateInput,
+    @Body() updateItemDto: UpdateItemDto,
   ): Promise<Item> {
     return this.itemsService.update(id, updateItemDto);
   }

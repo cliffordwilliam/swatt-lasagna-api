@@ -78,6 +78,8 @@ Nest is [MIT licensed](LICENSE).
 
 Do not forget to generate first
 
+Also do not forget to update the dto, dto is separate because that is the only way the nestjs built in validationpipe going to work, otherwise there is not validation at all
+
 ```bash
 npx prisma generate
 ```
