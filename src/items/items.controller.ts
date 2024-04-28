@@ -7,10 +7,10 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { Item } from '@prisma/client';
-import { CreateItemDto } from 'src/dto/create-item.dto';
-import { UpdateItemDto } from 'src/dto/update-item.dto';
 import { ItemsService } from './items.service';
+import { CreateItemDto } from './dto/create-item.dto';
+import { UpdateItemDto } from './dto/update-item.dto';
+import { Item } from '@prisma/client';
 
 @Controller('items')
 export class ItemsController {

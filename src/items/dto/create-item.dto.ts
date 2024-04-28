@@ -1,4 +1,3 @@
-// create-item.dto.ts
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateItemDto {
