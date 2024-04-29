@@ -10,17 +10,27 @@ export class UsersService {
   create(createUserDto: CreateUserDto): Promise<User> {
     return this.prisma.user.create({
       data: createUserDto,
+      include: {
+        role: true,
+      },
     });
   }
 
   findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      include: {
+        role: true,
+      },
+    });
   }
 
   findOne(id: string): Promise<User> {
     return this.prisma.user.findUnique({
       where: {
         id: id,
+      },
+      include: {
+        role: true,
       },
     });
   }
@@ -30,6 +40,9 @@ export class UsersService {
       where: {
         id: id,
       },
+      include: {
+        role: true,
+      },
       data: updateUserDto,
     });
   }
@@ -38,6 +51,9 @@ export class UsersService {
     return this.prisma.user.delete({
       where: {
         id: id,
+      },
+      include: {
+        role: true,
       },
     });
   }
