@@ -5,9 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ItemsModule } from './items/items.module';
 import { RolesModule } from './roles/roles.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), ItemsModule, RolesModule],
+  imports: [ConfigModule.forRoot(), ItemsModule, RolesModule, UsersModule],
   controllers: [AppController],
   providers: [
     AppService,
