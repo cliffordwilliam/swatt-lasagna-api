@@ -13,7 +13,6 @@ export function logger(req: Request, res: Response, next: NextFunction) {
     try {
       logger.log(
         `${method} ${url} ${statusCode} ${contentLength} - ${userAgent} ${ip}`,
-        'info',
       );
     } catch (error) {
       console.error('Error in logger middleware:', error);
