@@ -6,9 +6,16 @@ import { AppService } from './app.service';
 import { ItemsModule } from './items/items.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), ItemsModule, RolesModule, UsersModule],
+  imports: [
+    ConfigModule.forRoot(),
+    ItemsModule,
+    RolesModule,
+    UsersModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
