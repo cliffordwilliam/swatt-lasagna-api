@@ -147,7 +147,15 @@ https://github.com/umami-software/umami/issues/927
 ## Todo list:
 
 - [x] Item basic crud
-- [ ] Item authentication
-- [ ] Item authorization
+- [x] Role basic crud
+- [x] User basic crud
+- [x] Authentication
+- [ ] Authorization
 - [x] Error handler
 - [ ] Pagination
+- [ ] Cors
+- [ ] Helmet
+- [ ] CSRF Protection
+- [ ] Rate Limiting
+- [ ] Cron - del old data
+- [ ] Swagger
