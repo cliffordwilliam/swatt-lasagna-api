@@ -132,6 +132,18 @@ npx prisma db seed
 
 ---
 
+## Info
+
+Add pgbouncer=true to the env connection strings, this mitigates the following issue
+
+Prepared statement already exists
+
+Reference
+
+https://github.com/umami-software/umami/issues/927
+
+---
+
 ## Todo list:
 
 - [x] Item basic crud
