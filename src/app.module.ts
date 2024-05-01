@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.module';
 import { PembayaransModule } from './pembayarans/pembayarans.module';
+import { PembelisModule } from './pembelis/pembelis.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PembayaransModule } from './pembayarans/pembayarans.module';
     AuthModule,
     PickupDeliveriesModule,
     PembayaransModule,
+    PembelisModule,
   ],
   controllers: [AppController],
   providers: [

@@ -160,3 +160,4 @@ https://github.com/umami-software/umami/issues/927
 - [ ] Cron - del old data
 - [ ] Swagger
 - [ ] Testing pembayarans
+- [ ] Testing pembelis
