@@ -8,6 +8,7 @@ import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.module';
+import { PembayaransModule } from './pembayarans/pembayarans.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.mo
     UsersModule,
     AuthModule,
     PickupDeliveriesModule,
+    PembayaransModule,
   ],
   controllers: [AppController],
   providers: [

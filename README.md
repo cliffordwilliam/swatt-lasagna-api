@@ -159,3 +159,4 @@ https://github.com/umami-software/umami/issues/927
 - [ ] Rate Limiting
 - [ ] Cron - del old data
 - [ ] Swagger
+- [ ] Testing pembayarans
