@@ -11,6 +11,7 @@ import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.mo
 import { PembayaransModule } from './pembayarans/pembayarans.module';
 import { PembelisModule } from './pembelis/pembelis.module';
 import { PenerimasModule } from './penerimas/penerimas.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PenerimasModule } from './penerimas/penerimas.module';
     PembayaransModule,
     PembelisModule,
     PenerimasModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
