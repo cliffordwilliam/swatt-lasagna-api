@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.module';
 import { PembayaransModule } from './pembayarans/pembayarans.module';
 import { PembelisModule } from './pembelis/pembelis.module';
+import { PenerimasModule } from './penerimas/penerimas.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PembelisModule } from './pembelis/pembelis.module';
     PickupDeliveriesModule,
     PembayaransModule,
     PembelisModule,
+    PenerimasModule,
   ],
   controllers: [AppController],
   providers: [
