@@ -156,4 +156,40 @@ describe('UsersService', () => {
       expect(result).toEqual(deletedUser);
     });
   });
+
+  describe('findOneUsername', () => {
+    it('should return a user by username', async () => {
+      const username = 'asd';
+      const mockUser: User = {
+        id: 'asd',
+        username: 'asd',
+        password: 'asd',
+        roleId: 'asd',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Mock the findUnique method of PrismaService
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(mockUser);
+
+      // Call the findOneUsername method of UsersService
+      const result = await service.findOneUsername(username);
+
+      // Check if the result matches the mock User
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should return null if user is not found', async () => {
+      const username = 'nonexistentuser';
+
+      // Mock the findUnique method of PrismaService to return null
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
+
+      // Call the findOneUsername method of UsersService
+      const result = await service.findOneUsername(username);
+
+      // Check if the result is null
+      expect(result).toBeNull();
+    });
+  });
 });
