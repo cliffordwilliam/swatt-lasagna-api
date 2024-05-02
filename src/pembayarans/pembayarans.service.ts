@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreatePembayaranDto } from './dto/create-pembayaran.dto';
 import { UpdatePembayaranDto } from './dto/update-pembayaran.dto';
 import { PrismaService } from '../prisma.service';
-import { Pembayaran } from '@prisma/client';
+import { Pembayaran, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class PembayaransService {
@@ -13,8 +18,28 @@ export class PembayaransService {
     });
   }
 
-  async findAll(): Promise<Pembayaran[]> {
-    return this.prisma.pembayaran.findMany();
+  async findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.PembayaranWhereInput;
+    orderBy?: Prisma.PembayaranOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<Pembayaran>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.pembayaran,
+      {
+        where,
+        orderBy,
+      },
+      {
+        page,
+      },
+    );
   }
 
   async findOne(id: string): Promise<Pembayaran> {

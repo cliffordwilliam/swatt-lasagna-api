@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreatePickupDeliveryDto } from './dto/create-pickup-delivery.dto';
 import { UpdatePickupDeliveryDto } from './dto/update-pickup-delivery.dto';
 import { PrismaService } from '../prisma.service';
-import { PickupDelivery } from '@prisma/client';
+import { PickupDelivery, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class PickupDeliveriesService {
@@ -15,8 +20,28 @@ export class PickupDeliveriesService {
     });
   }
 
-  async findAll(): Promise<PickupDelivery[]> {
-    return this.prisma.pickupDelivery.findMany();
+  async findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.PickupDeliveryWhereInput;
+    orderBy?: Prisma.PickupDeliveryOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<PickupDelivery>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.pickupDelivery,
+      {
+        where,
+        orderBy,
+      },
+      {
+        page,
+      },
+    );
   }
 
   async findOne(id: string): Promise<PickupDelivery> {

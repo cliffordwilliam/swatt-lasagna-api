@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PembelisService } from './pembelis.service';
 import { CreatePembeliDto } from './dto/create-pembeli.dto';
 import { UpdatePembeliDto } from './dto/update-pembeli.dto';
-import { Pembeli } from '@prisma/client';
+import { Pembeli, Prisma } from '@prisma/client';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('pembelis')
 export class PembelisController {
@@ -22,8 +24,18 @@ export class PembelisController {
   }
 
   @Get()
-  async findAll(): Promise<Pembeli[]> {
-    return this.pembelisService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.PembeliWhereInput,
+    @Query('orderBy') orderBy?: Prisma.PembeliOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<Pembeli>> {
+    return this.pembelisService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')

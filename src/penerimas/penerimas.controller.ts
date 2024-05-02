@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PenerimasService } from './penerimas.service';
 import { CreatePenerimaDto } from './dto/create-penerimas.dto';
 import { UpdatePenerimaDto } from './dto/update-penerimas.dto';
-import { Penerima } from '@prisma/client';
+import { Penerima, Prisma } from '@prisma/client';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('penerimas')
 export class PenerimasController {
@@ -24,8 +26,18 @@ export class PenerimasController {
   }
 
   @Get()
-  async findAll(): Promise<Penerima[]> {
-    return this.penerimasService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.PenerimaWhereInput,
+    @Query('orderBy') orderBy?: Prisma.PenerimaOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<Penerima>> {
+    return this.penerimasService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')

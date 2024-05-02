@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreatePembeliDto } from './dto/create-pembeli.dto';
 import { UpdatePembeliDto } from './dto/update-pembeli.dto';
 import { PrismaService } from '../prisma.service';
-import { Pembeli } from '@prisma/client';
+import { Pembeli, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class PembelisService {
@@ -13,8 +18,28 @@ export class PembelisService {
     });
   }
 
-  async findAll(): Promise<Pembeli[]> {
-    return this.prisma.pembeli.findMany();
+  async findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.PembeliWhereInput;
+    orderBy?: Prisma.PembeliOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<Pembeli>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.pembeli,
+      {
+        where,
+        orderBy,
+      },
+      {
+        page,
+      },
+    );
   }
 
   async findOne(id: string): Promise<Pembeli> {

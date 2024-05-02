@@ -6,13 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 import { Roles } from './roles.decorator';
 import { Role as RoleEnum } from './role.enum';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('roles')
 export class RolesController {
@@ -25,8 +27,18 @@ export class RolesController {
   }
 
   @Get()
-  async findAll(): Promise<Role[]> {
-    return this.rolesService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.RoleWhereInput,
+    @Query('orderBy') orderBy?: Prisma.RoleOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<Role>> {
+    return this.rolesService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')

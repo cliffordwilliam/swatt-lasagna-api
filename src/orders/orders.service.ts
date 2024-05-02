@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from '../prisma.service';
-import { Order } from '@prisma/client';
+import { Order, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class OrdersService {
@@ -24,20 +29,39 @@ export class OrdersService {
     });
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.prisma.order.findMany({
-      include: {
-        pembeli: true,
-        penerima: true,
-        pickupDelivery: true,
-        pembayaran: true,
-        items: {
-          include: {
-            item: true,
+  async findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.OrderWhereInput;
+    orderBy?: Prisma.OrderOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<Order>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.order,
+      {
+        where,
+        orderBy,
+        include: {
+          pembeli: true,
+          penerima: true,
+          pickupDelivery: true,
+          pembayaran: true,
+          items: {
+            include: {
+              item: true,
+            },
           },
         },
       },
-    });
+      {
+        page,
+      },
+    );
   }
 
   async findOne(id: string): Promise<Order> {

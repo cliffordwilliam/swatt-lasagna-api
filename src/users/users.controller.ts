@@ -6,13 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('users')
 export class UsersController {
@@ -25,8 +27,18 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.UserWhereInput,
+    @Query('orderBy') orderBy?: Prisma.UserOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<User>> {
+    return this.usersService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')

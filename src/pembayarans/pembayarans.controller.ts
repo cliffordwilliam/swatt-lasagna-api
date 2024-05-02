@@ -6,11 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { Pembayaran } from '@prisma/client';
+import { Pembayaran, Prisma } from '@prisma/client';
 import { CreatePembayaranDto } from './dto/create-pembayaran.dto';
 import { UpdatePembayaranDto } from './dto/update-pembayaran.dto';
 import { PembayaransService } from './pembayarans.service';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('pembayarans')
 export class PembayaransController {
@@ -24,8 +26,18 @@ export class PembayaransController {
   }
 
   @Get()
-  async findAll(): Promise<Pembayaran[]> {
-    return this.pembayaransService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.PembayaranWhereInput,
+    @Query('orderBy') orderBy?: Prisma.PembayaranOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<Pembayaran>> {
+    return this.pembayaransService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')

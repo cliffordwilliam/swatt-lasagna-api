@@ -148,9 +148,9 @@ https://github.com/umami-software/umami/issues/927
 
 - [x] All basic crud
 - [x] Authentication
-- [ ] Authorization
+- [X] Authorization
 - [x] Error handler
-- [ ] Pagination
+- [X] Pagination
 - [ ] Cors
 - [ ] Helmet
 - [ ] CSRF Protection

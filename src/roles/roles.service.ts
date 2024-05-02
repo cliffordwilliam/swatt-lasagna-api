@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { PrismaService } from '../prisma.service';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class RolesService {
@@ -13,8 +18,28 @@ export class RolesService {
     });
   }
 
-  findAll(): Promise<Role[]> {
-    return this.prisma.role.findMany();
+  findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.RoleWhereInput;
+    orderBy?: Prisma.RoleOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<Role>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.role,
+      {
+        where,
+        orderBy,
+      },
+      {
+        page,
+      },
+    );
   }
 
   findOne(id: string): Promise<Role> {

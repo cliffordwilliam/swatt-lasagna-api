@@ -2,9 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma.service';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UserWithRole } from './users.interface';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class UsersService {
@@ -27,12 +32,31 @@ export class UsersService {
     }
   }
 
-  findAll(): Promise<User[]> {
-    return this.prisma.user.findMany({
-      include: {
-        role: true,
+  findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.UserWhereInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<User>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.user,
+      {
+        where,
+        orderBy,
+        include: {
+          role: true,
+        },
       },
-    });
+      {
+        page,
+      },
+    );
   }
 
   findOne(id: string): Promise<User> {

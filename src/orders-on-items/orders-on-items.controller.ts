@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { OrdersOnItemsService } from './orders-on-items.service';
 import { CreateOrdersOnItemDto } from './dto/create-orders-on-item.dto';
 import { UpdateOrdersOnItemDto } from './dto/update-orders-on-item.dto';
-import { OrdersOnItems } from '@prisma/client';
+import { OrdersOnItems, Prisma } from '@prisma/client';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('orders-on-items')
 export class OrdersOnItemsController {
@@ -24,8 +26,18 @@ export class OrdersOnItemsController {
   }
 
   @Get()
-  async findAll(): Promise<OrdersOnItems[]> {
-    return this.ordersOnItemsService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.OrdersOnItemsWhereInput,
+    @Query('orderBy') orderBy?: Prisma.OrdersOnItemsOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<OrdersOnItems>> {
+    return this.ordersOnItemsService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':orderId/:itemId')

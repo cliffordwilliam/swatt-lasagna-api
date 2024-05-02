@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreatePenerimaDto } from './dto/create-penerimas.dto';
 import { UpdatePenerimaDto } from './dto/update-penerimas.dto';
 import { PrismaService } from '../prisma.service';
-import { Penerima } from '@prisma/client';
+import { Penerima, Prisma } from '@prisma/client';
+import {
+  PaginatedResult,
+  PaginateFunction,
+  paginator,
+} from '../common/utils/paginator.util';
 
 @Injectable()
 export class PenerimasService {
@@ -13,8 +18,28 @@ export class PenerimasService {
     });
   }
 
-  async findAll(): Promise<Penerima[]> {
-    return this.prisma.penerima.findMany();
+  async findAll({
+    where,
+    orderBy,
+    page,
+    perPage,
+  }: {
+    where?: Prisma.PenerimaWhereInput;
+    orderBy?: Prisma.PenerimaOrderByWithRelationInput;
+    page?: number;
+    perPage?: number;
+  }): Promise<PaginatedResult<Penerima>> {
+    const paginate: PaginateFunction = paginator({ perPage: perPage });
+    return paginate(
+      this.prisma.penerima,
+      {
+        where,
+        orderBy,
+      },
+      {
+        page,
+      },
+    );
   }
 
   async findOne(id: string): Promise<Penerima> {

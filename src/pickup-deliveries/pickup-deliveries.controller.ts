@@ -6,13 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PickupDeliveriesService } from './pickup-deliveries.service';
 import { CreatePickupDeliveryDto } from './dto/create-pickup-delivery.dto';
 import { UpdatePickupDeliveryDto } from './dto/update-pickup-delivery.dto';
-import { PickupDelivery } from '@prisma/client';
+import { PickupDelivery, Prisma } from '@prisma/client';
 import { Roles } from 'src/roles/roles.decorator';
 import { Role } from 'src/roles/role.enum';
+import { PaginatedResult } from 'src/common/utils/paginator.util';
 
 @Controller('pickup-deliveries')
 export class PickupDeliveriesController {
@@ -29,8 +31,18 @@ export class PickupDeliveriesController {
   }
 
   @Get()
-  async findAll(): Promise<PickupDelivery[]> {
-    return this.pickupDeliveriesService.findAll();
+  async findAll(
+    @Query('where') where?: Prisma.PickupDeliveryWhereInput,
+    @Query('orderBy') orderBy?: Prisma.PickupDeliveryOrderByWithRelationInput,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ): Promise<PaginatedResult<PickupDelivery>> {
+    return this.pickupDeliveriesService.findAll({
+      where,
+      orderBy,
+      page,
+      perPage,
+    });
   }
 
   @Get(':id')
