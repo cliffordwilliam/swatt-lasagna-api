@@ -12,6 +12,7 @@ import { PembayaransModule } from './pembayarans/pembayarans.module';
 import { PembelisModule } from './pembelis/pembelis.module';
 import { PenerimasModule } from './penerimas/penerimas.module';
 import { OrdersModule } from './orders/orders.module';
+import { OrdersOnItemsModule } from './orders-on-items/orders-on-items.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { OrdersModule } from './orders/orders.module';
     PembelisModule,
     PenerimasModule,
     OrdersModule,
+    OrdersOnItemsModule,
   ],
   controllers: [AppController],
   providers: [

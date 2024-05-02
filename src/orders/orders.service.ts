@@ -15,6 +15,11 @@ export class OrdersService {
         penerima: true,
         pickupDelivery: true,
         pembayaran: true,
+        items: {
+          include: {
+            item: true,
+          },
+        },
       },
     });
   }
@@ -26,6 +31,11 @@ export class OrdersService {
         penerima: true,
         pickupDelivery: true,
         pembayaran: true,
+        items: {
+          include: {
+            item: true,
+          },
+        },
       },
     });
   }
@@ -40,6 +50,11 @@ export class OrdersService {
         penerima: true,
         pickupDelivery: true,
         pembayaran: true,
+        items: {
+          include: {
+            item: true,
+          },
+        },
       },
     });
   }
@@ -55,6 +70,11 @@ export class OrdersService {
         penerima: true,
         pickupDelivery: true,
         pembayaran: true,
+        items: {
+          include: {
+            item: true,
+          },
+        },
       },
     });
   }
@@ -69,6 +89,11 @@ export class OrdersService {
         penerima: true,
         pickupDelivery: true,
         pembayaran: true,
+        items: {
+          include: {
+            item: true,
+          },
+        },
       },
     });
   }
