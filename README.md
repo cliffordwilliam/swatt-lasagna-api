@@ -152,10 +152,10 @@ https://github.com/umami-software/umami/issues/927
 - [x] Error handler
 - [x] Pagination
 - [x] Cors -> TODO: Do not forget to update the vercels domain for this, right now it lets localhost 3000 only
-- [ ] Helmet
+- [x] Helmet
 - [ ] CSRF Protection -> Not working?
 - [x] Rate Limiting
 - [ ] Cron - for deleting old data
-- [ ] Swagger
+- [x] Swagger -> TODO: Works but all are auth, cannot sign in either needs token for body but body is not availablle
 - [ ] Testing all
-- [ ] Refrash token
+- [ ] Refrash token -> TODO: Maybe no need, just re login every 15 minutes no problem
