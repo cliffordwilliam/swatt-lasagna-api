@@ -13,6 +13,8 @@ import { PenerimasModule } from './penerimas/penerimas.module';
 import { PickupDeliveriesModule } from './pickup-deliveries/pickup-deliveries.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -27,6 +29,12 @@ import { UsersModule } from './users/users.module';
     PenerimasModule,
     OrdersModule,
     OrdersOnItemsModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
@@ -36,6 +44,10 @@ import { UsersModule } from './users/users.module';
       P2002: HttpStatus.CONFLICT,
       P2025: HttpStatus.NOT_FOUND,
     }),
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
