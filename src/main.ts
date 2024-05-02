@@ -4,12 +4,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { logger } from './common/middlewares/logger.middleware';
-import * as csurf from 'csurf';
+// import * as csurf from 'csurf';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(csurf());
+  app.enableCors({
+    origin: 'http://localhost:3000',
+  });
   app.use(logger);
 
   const { httpAdapter } = app.get(HttpAdapterHost);
@@ -28,7 +30,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  // app.use(csurf());
   await app.listen(3000);
 }
 bootstrap();
