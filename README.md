@@ -146,9 +146,7 @@ https://github.com/umami-software/umami/issues/927
 
 ## Todo list:
 
-- [x] Item basic crud
-- [x] Role basic crud
-- [x] User basic crud
+- [x] All basic crud
 - [x] Authentication
 - [ ] Authorization
 - [x] Error handler
@@ -157,7 +155,7 @@ https://github.com/umami-software/umami/issues/927
 - [ ] Helmet
 - [ ] CSRF Protection
 - [ ] Rate Limiting
-- [ ] Cron - del old data
+- [ ] Cron - for deleting old data
 - [ ] Swagger
-- [ ] Testing pembayarans
-- [ ] Testing pembelis
+- [ ] Testing all
+- [ ] Refrash token
