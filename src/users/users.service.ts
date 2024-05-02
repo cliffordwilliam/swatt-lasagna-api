@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { UserWithRole } from './users.interface';
 
 @Injectable()
 export class UsersService {
@@ -69,7 +70,7 @@ export class UsersService {
   }
 
   // For login usage
-  findOneUsername(username: string): Promise<User> {
+  findOneUsername(username: string): Promise<UserWithRole> {
     return this.prisma.user.findUnique({
       where: {
         username: username,

@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { PembayaransService } from './pembayarans.service';
+import { Pembayaran } from '@prisma/client';
 import { CreatePembayaranDto } from './dto/create-pembayaran.dto';
 import { UpdatePembayaranDto } from './dto/update-pembayaran.dto';
-import { Pembayaran } from '@prisma/client';
+import { PembayaransService } from './pembayarans.service';
 
 @Controller('pembayarans')
 export class PembayaransController {

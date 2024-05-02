@@ -11,6 +11,8 @@ import { PickupDeliveriesService } from './pickup-deliveries.service';
 import { CreatePickupDeliveryDto } from './dto/create-pickup-delivery.dto';
 import { UpdatePickupDeliveryDto } from './dto/update-pickup-delivery.dto';
 import { PickupDelivery } from '@prisma/client';
+import { Roles } from 'src/roles/roles.decorator';
+import { Role } from 'src/roles/role.enum';
 
 @Controller('pickup-deliveries')
 export class PickupDeliveriesController {
@@ -18,6 +20,7 @@ export class PickupDeliveriesController {
     private readonly pickupDeliveriesService: PickupDeliveriesService,
   ) {}
 
+  @Roles(Role.Admin)
   @Post()
   async create(
     @Body() createPickupDeliveryDto: CreatePickupDeliveryDto,
@@ -35,6 +38,7 @@ export class PickupDeliveriesController {
     return this.pickupDeliveriesService.findOne(id);
   }
 
+  @Roles(Role.Admin)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -43,6 +47,7 @@ export class PickupDeliveriesController {
     return this.pickupDeliveriesService.update(id, updatePickupDeliveryDto);
   }
 
+  @Roles(Role.Admin)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<PickupDelivery> {
     return this.pickupDeliveriesService.remove(id);
