@@ -151,7 +151,7 @@ https://github.com/umami-software/umami/issues/927
 - [x] Authorization
 - [x] Error handler
 - [x] Pagination
-- [x] Cors -> TODO: Do not forget to update the vercels domain for this, right now it lets localhost 3000 only
+- [x] Cors
 - [x] Helmet
 - [ ] CSRF Protection -> Not working?
 - [x] Rate Limiting
