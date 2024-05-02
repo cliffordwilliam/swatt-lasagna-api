@@ -55,6 +55,7 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "csurf": "^1.11.0",
     "dotenv-cli": "^7.4.1",
     "nestjs-prisma": "^0.23.0",
     "reflect-metadata": "^0.2.0",

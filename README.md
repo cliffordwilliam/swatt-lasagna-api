@@ -148,13 +148,13 @@ https://github.com/umami-software/umami/issues/927
 
 - [x] All basic crud
 - [x] Authentication
-- [X] Authorization
+- [x] Authorization
 - [x] Error handler
-- [X] Pagination
+- [x] Pagination
 - [ ] Cors
 - [ ] Helmet
 - [ ] CSRF Protection
-- [ ] Rate Limiting
+- [x] Rate Limiting
 - [ ] Cron - for deleting old data
 - [ ] Swagger
 - [ ] Testing all
