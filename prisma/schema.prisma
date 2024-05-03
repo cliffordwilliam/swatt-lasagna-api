@@ -54,6 +54,7 @@ model Order {
   items            OrdersOnItems[]
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  status           Boolean         @default(false)
 }
 
 model OrdersOnItems {
