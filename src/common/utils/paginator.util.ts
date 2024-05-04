@@ -46,6 +46,14 @@ export const paginator = (
     const perPage = Number(options?.perPage || defaultOptions?.perPage) || 10;
 
     const skip = page > 0 ? perPage * (page - 1) : 0;
+
+    if (args.where && args.where.nama) {
+      args.where.nama = {
+        contains: args.where.nama.toLowerCase(),
+        mode: 'insensitive',
+      };
+    }
+
     const [total, data] = await Promise.all([
       model.count({ where: args.where }),
       model.findMany({
