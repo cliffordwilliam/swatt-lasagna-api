@@ -47,11 +47,17 @@ export const paginator = (
 
     const skip = page > 0 ? perPage * (page - 1) : 0;
 
-    if (args.where && args.where.nama) {
-      args.where.nama = {
-        contains: args.where.nama.toLowerCase(),
-        mode: 'insensitive',
-      };
+    if (args.where) {
+      const where: any = {};
+      for (const key in args.where) {
+        if (Object.prototype.hasOwnProperty.call(args.where, key)) {
+          where[key] = {
+            contains: args.where[key].toLowerCase(),
+            mode: 'insensitive',
+          };
+        }
+      }
+      args.where = where;
     }
 
     const [total, data] = await Promise.all([
