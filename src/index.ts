@@ -1,16 +1,15 @@
-// src/index.ts
+import express from "express";
 
-import http from 'http';
-
+const app = express();
 const PORT = 3000;
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello from be-waffle-shop backend with TypeScript!\n');
+app.use(express.json());
+
+app.get('/', (_req, res) => {
+    res.send('I am alive!');
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+app.listen(PORT, ()=>{
+    console.log(`Server running at http://localhost:${PORT}/`);
 });
 
