@@ -5,6 +5,10 @@ import { ManageWaffle } from "./services/manage_waffle";
 
 const waffleRouter = Router();
 
+waffleRouter.get("/", async (_req, res, _next) => {
+    res.send('Waffles!');
+});
+
 waffleRouter.post("/", validateBody(WaffleCreateRequest), async (req, res, _next) => {
     const created_waffle = ManageWaffle.create(req.body);
     res.json(validateResponse(CreateWaffleResponse, created_waffle));
