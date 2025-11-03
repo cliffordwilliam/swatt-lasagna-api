@@ -28,6 +28,6 @@ This is the backend service for the be-waffle-shop application.
 2. **Run the backend:**
 
    ```bash
-   npm start
+   npm run build && npm start
    ```
 
