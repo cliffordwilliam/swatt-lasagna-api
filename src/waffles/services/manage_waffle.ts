@@ -1,9 +1,9 @@
 import { WaffleRepository } from "../repositories/waffle_repository";
-import { WaffleCreateRequest } from "../schemas/waffle"
+import { WaffleCreateRequest, WaffleFilter } from "../schemas/waffle"
 
 export const ManageWaffle = {
-    list() {
-        return WaffleRepository.list();
+    list(filters: WaffleFilter) {
+        return WaffleRepository.list(filters);
     },
 
     create(waffle_data: WaffleCreateRequest) {

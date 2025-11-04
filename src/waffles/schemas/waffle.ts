@@ -16,7 +16,7 @@ export const WaffleUpdateRequest = z.object({
 export type WaffleUpdateRequest = z.infer<typeof WaffleUpdateRequest>;
 
 export const WaffleFilter = z.object({
-    waffle_name: z.string().optional(),
+    waffle_name: z.string().min(1, "Name is required").max(100, "Name is too long").optional(),
 });
 export type WaffleFilter = z.infer<typeof WaffleFilter>;
 
