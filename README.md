@@ -29,4 +29,3 @@ This is the backend service for the be-waffle-shop application.
    ```bash
    npm run build && npm start
    ```
-
