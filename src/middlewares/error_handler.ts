@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
 import { validate } from "../utils/validate";
 
