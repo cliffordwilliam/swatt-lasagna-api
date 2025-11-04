@@ -7,12 +7,24 @@ const waffleRouter = Router();
 
 waffleRouter.get("/", async (req, res, _next) => {
     const waffles = ManageWaffle.list(validate(WaffleFilter, req.query));
-    res.json(validate(ListWaffleResponse, waffles));
+    res.json(validate(
+        ListWaffleResponse,
+        {
+            success: true,
+            data: waffles,
+        },
+    ));
 });
 
 waffleRouter.post("/", async (req, res, _next) => {
     const created_waffle = ManageWaffle.create(validate(WaffleCreateRequest, req.body));
-    res.json(validate(CreateWaffleResponse, created_waffle));
+    res.json(validate(
+        CreateWaffleResponse,
+        {
+            success: true,
+            data: created_waffle,
+        },
+    ));
 });
 
 export default waffleRouter;
