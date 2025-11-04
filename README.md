@@ -7,6 +7,7 @@ This is the backend service for the be-waffle-shop application.
 ## Prerequisites
 
 - [Node.js v22.20.0](https://nodejs.org/) (managed with [nvm](https://github.com/nvm-sh/nvm))
+- [Docker](https://docs.docker.com/get-docker/) and **Docker Compose**
 
 ---
 
@@ -16,9 +17,7 @@ This is the backend service for the be-waffle-shop application.
 
    This project uses Node.js version 22.20.0.
 
-   Make sure you have it installed with `nvm`, `install` and `use` will read the version written in `.nvmrc`.
-
-   `npm` is available once you installed and use a node version.
+   Run the following commands to clone the repo, install Node, and install dependencies:
 
    ```bash
    git clone <repo-url> && cd be-waffle-shop && nvm install && nvm use && npm install
@@ -27,5 +26,11 @@ This is the backend service for the be-waffle-shop application.
 2. **Run the backend:**
 
    ```bash
-   npm run build && npm start
+   docker compose up -d && npm run build && npm start
+   ```
+
+3. **Do not forget to turn off docker once you killed the app:**
+
+   ```bash
+   docker compose down
    ```

@@ -8,4 +8,4 @@
 - [ ] add postman 2e2
 - [ ] use github action to run tests, formats and lints
 - [ ] pick orm where we can control commit and flushes, maybe drizzle?
-- [ ] standardized the responses shape, error and usual ones
+- [x] standardized the responses shape, error and usual ones
