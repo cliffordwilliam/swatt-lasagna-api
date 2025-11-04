@@ -1,7 +1,11 @@
 import { WaffleCreateRequest } from "../schemas/waffle";
 
 export const WaffleRepository = {
+    list() {
+        return [{ waffle_id: "1", waffle_name: "asd"}];
+    },
+
     create(waffle_data: WaffleCreateRequest) {
-        return { id: "1", name: waffle_data.waffle_name };
+        return { waffle_id: "1", waffle_name: waffle_data.waffle_name };
     }
 };

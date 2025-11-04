@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { CreateWaffleResponse, WaffleCreateRequest } from "./schemas/waffle";
+import { CreateWaffleResponse, ListWaffleResponse, WaffleCreateRequest } from "./schemas/waffle";
 import { validateBody, validateResponse } from "../middlewares/validate";
 import { ManageWaffle } from "./services/manage_waffle";
 
 const waffleRouter = Router();
 
 waffleRouter.get("/", async (_req, res, _next) => {
-    res.send('Waffles!');
+    const waffles = ManageWaffle.list();
+    res.json(validateResponse(ListWaffleResponse, waffles));
 });
 
 waffleRouter.post("/", validateBody(WaffleCreateRequest), async (req, res, _next) => {
