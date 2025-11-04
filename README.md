@@ -7,7 +7,6 @@ This is the backend service for the be-waffle-shop application.
 ## Prerequisites
 
 - [Node.js v22.20.0](https://nodejs.org/) (managed with [nvm](https://github.com/nvm-sh/nvm))
-- npm v10.9.3
 
 ---
 
