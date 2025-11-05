@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
-import { validate } from "../utils/validate";
 
 export function errorHandler(
   err: Error,
@@ -12,7 +11,7 @@ export function errorHandler(
 ) {
   if (err instanceof ZodError) {
     res.status(400).json(
-      validate(ErrorResponse, {
+      ErrorResponse.parse({
         success: false,
         error: {
           message: "Request validation error",
