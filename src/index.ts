@@ -1,6 +1,12 @@
+import "reflect-metadata";
 import express from "express";
 import waffleRouter from "./waffles/routers";
 import { errorHandler } from "./middlewares/error_handler";
+import { getORM } from "./orm";
+
+(async () => {
+  await getORM();
+})();
 
 const app = express();
 

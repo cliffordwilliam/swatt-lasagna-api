@@ -1,12 +1,17 @@
-import { WaffleCreateRequest, WaffleFilter } from "../schemas/waffle";
+import { getEM } from "../../orm";
+import { WaffleEntity } from "../entities/waffle.entity";
+import { WaffleFilter } from "../schemas/waffle";
 
 export const WaffleRepository = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  list(_filters: WaffleFilter) {
-    return [{ waffle_id: "1", waffle_name: "asd" }];
+  async list(_filters: WaffleFilter) {
+    const em = await getEM();
+    return await em.find(WaffleEntity, {});
   },
 
-  create(waffle_data: WaffleCreateRequest) {
-    return { waffle_id: "1", waffle_name: waffle_data.waffle_name };
+  async create(waffle: WaffleEntity) {
+    const em = await getEM();
+    await em.persistAndFlush(waffle);
+    return waffle;
   },
 };

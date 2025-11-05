@@ -2,7 +2,7 @@ import { z } from "zod";
 import { SuccessResponse } from "../../api/schemas/api";
 
 export const Waffle = z.object({
-  waffle_id: z.string(),
+  waffle_id: z.int(),
   waffle_name: z.string(),
 });
 

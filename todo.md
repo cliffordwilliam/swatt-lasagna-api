@@ -7,5 +7,8 @@
 - [ ] add unit test
 - [ ] add postman 2e2
 - [ ] use github action to run tests, formats and lints
-- [ ] pick mikroorm where we can control commit and flushes
+- [x] pick mikroorm where we can control commit and flushes
 - [x] standardized the responses shape, error and usual ones
+- [ ] add .env for db config
+- [ ] add pagination
+- [ ] add bash local start

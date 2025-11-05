@@ -1,12 +1,15 @@
+import { WaffleEntity } from "../entities/waffle.entity";
 import { WaffleRepository } from "../repositories/waffle_repository";
 import { WaffleCreateRequest, WaffleFilter } from "../schemas/waffle";
 
 export const ManageWaffle = {
-  list(filters: WaffleFilter) {
-    return WaffleRepository.list(filters);
+  async list(filters: WaffleFilter) {
+    return await WaffleRepository.list(filters);
   },
 
-  create(waffle_data: WaffleCreateRequest) {
-    return WaffleRepository.create(waffle_data);
+  async create(waffle_data: WaffleCreateRequest) {
+    const waffle = new WaffleEntity();
+    waffle.waffle_name = waffle_data.waffle_name;
+    return await WaffleRepository.create(waffle);
   },
 };
