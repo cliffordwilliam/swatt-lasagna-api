@@ -12,3 +12,4 @@
 - [ ] add .env for db config
 - [ ] add pagination
 - [ ] add bash local start
+- [ ] add adminer
