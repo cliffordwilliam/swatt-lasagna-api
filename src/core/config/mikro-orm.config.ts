@@ -4,7 +4,6 @@ import { env } from "./constants";
 const config: Options = {
   driver: PostgreSqlDriver,
   clientUrl: env.DATABASE_URL,
-  password: "postgres",
   entities: ["dist/**/*.entity.js"],
   entitiesTs: ["src/**/*.entity.ts"],
 };

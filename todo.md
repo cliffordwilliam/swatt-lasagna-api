@@ -13,4 +13,4 @@
 - [ ] add pagination
 - [x] add bash local start
 - [x] add adminer
-- [ ] add const to hold all error codes
+- [ ] add logger
