@@ -1,11 +1,9 @@
 import { Options, PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { env } from "./constants";
 
 const config: Options = {
   driver: PostgreSqlDriver,
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  dbName: "be_waffle_shop",
+  clientUrl: env.DATABASE_URL,
   password: "postgres",
   entities: ["dist/**/*.entity.js"],
   entitiesTs: ["src/**/*.entity.ts"],

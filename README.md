@@ -20,7 +20,7 @@ This is the backend service for the be-waffle-shop application.
    Run the following commands to clone the repo, install Node, and install dependencies:
 
    ```bash
-   git clone <repo-url> && cd be-waffle-shop && nvm install && nvm use && npm install
+   git clone <repo-url> && cd be-waffle-shop && nvm install && nvm use && npm install && cp .env.example .env
    ```
 
 2. **Run the backend:**

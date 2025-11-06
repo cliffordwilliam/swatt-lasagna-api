@@ -2,7 +2,8 @@ import "reflect-metadata";
 import express from "express";
 import waffleRouter from "./waffles/routers";
 import { errorHandler } from "./middlewares/error_handler";
-import { getORM } from "./orm";
+import { getORM } from "./core/database/adapter";
+import { env } from "./core/config/constants";
 
 (async () => {
   await getORM();
@@ -16,6 +17,6 @@ app.use("/waffles", waffleRouter);
 
 app.use(errorHandler);
 
-app.listen(3000, () => {
-  console.log(`Server running at http://localhost:${3000}/`);
+app.listen(env.PORT, () => {
+  console.log(`Server running at http://localhost:${env.PORT}/`);
 });

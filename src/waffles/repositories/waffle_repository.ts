@@ -1,4 +1,4 @@
-import { getEM } from "../../orm";
+import { getEM } from "../../core/database/adapter";
 import { WaffleEntity } from "../entities/waffle.entity";
 import { WaffleFilter } from "../schemas/waffle";
 
