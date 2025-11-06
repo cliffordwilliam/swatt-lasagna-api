@@ -7,3 +7,9 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: be_waffle_shop
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8080:8080"

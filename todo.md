@@ -11,5 +11,5 @@
 - [x] standardized the responses shape, error and usual ones
 - [ ] add .env for db config
 - [ ] add pagination
-- [ ] add bash local start
-- [ ] add adminer
+- [x] add bash local start
+- [x] add adminer

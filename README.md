@@ -26,11 +26,5 @@ This is the backend service for the be-waffle-shop application.
 2. **Run the backend:**
 
    ```bash
-   docker compose up -d && npm run build && npm start
-   ```
-
-3. **Do not forget to turn off docker once you killed the app:**
-
-   ```bash
-   docker compose down
+   bash ./local-start.sh
    ```
