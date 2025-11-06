@@ -8,8 +8,7 @@ export async function getORM() {
     try {
       orm = await MikroORM.init(config);
       orm.getSchemaGenerator().updateSchema(); // Only in dev
-    } catch (e) {
-      console.log(e);
+    } catch {
       process.exit(1);
     }
   }
