@@ -6,14 +6,7 @@ import { getORM } from "./core/database/adapter";
 import { env } from "./core/config/constants";
 
 (async () => {
-  const orm = await getORM();
-
-  const shutdown = async () => {
-    await orm.close(true);
-    process.exit(0);
-  };
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  await getORM();
 
   const app = express();
 
