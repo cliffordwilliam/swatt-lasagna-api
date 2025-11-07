@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
+import { NotFoundError } from "@mikro-orm/core";
 
 export function errorHandler(
   err: Error,
@@ -9,7 +10,6 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ) {
-  console.log(err);
   if (err instanceof ZodError) {
     res.status(400).json(
       ErrorResponse.parse({
@@ -21,6 +21,17 @@ export function errorHandler(
             message: i.message,
             type: i.code,
           })),
+        },
+      }),
+    );
+    return;
+  }
+  if (err instanceof NotFoundError) {
+    res.status(404).json(
+      ErrorResponse.parse({
+        success: false,
+        error: {
+          message: err.message,
         },
       }),
     );
