@@ -1,16 +1,22 @@
 import { z } from "zod";
 
-export const PageSchema = z.coerce
-  .number()
-  .min(1, "Page size must be at least one")
-  .max(100, "Page size cannot exceed 100")
-  .default(10);
-
-export const PageSizeSchema = z.coerce
-  .number()
-  .min(1, "Page size must be at least one")
-  .max(100, "Page size cannot exceed 100")
-  .default(10);
+export const PaginationRequest = z.object({
+  mode: z
+    .string()
+    .transform((val) => val.toLowerCase())
+    .pipe(z.enum(["and", "or"]))
+    .default("and"),
+  page: z.coerce
+    .number()
+    .min(1, "Page size must be at least one")
+    .max(100, "Page size cannot exceed 100")
+    .default(10),
+  page_size: z.coerce
+    .number()
+    .min(1, "Page size must be at least one")
+    .max(100, "Page size cannot exceed 100")
+    .default(10),
+});
 
 export const PaginationResponse = z.object({
   page: z.int(),
