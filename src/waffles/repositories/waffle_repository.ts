@@ -4,6 +4,11 @@ import { WaffleEntity } from "../entities/waffle.entity";
 import { WaffleFilter } from "../schemas/waffle";
 
 export const WaffleRepository = {
+  async get_by_id_or_fail(waffle_id: number) {
+    const em = await getEM();
+    return em.findOneOrFail(WaffleEntity, { waffle_id });
+  },
+
   async list(filters: WaffleFilter) {
     const em = await getEM();
     const conditions: FilterQuery<WaffleEntity>[] = [];
@@ -44,7 +49,7 @@ export const WaffleRepository = {
     };
   },
 
-  async create(waffle: WaffleEntity) {
+  async save(waffle: WaffleEntity) {
     const em = await getEM();
     await em.persistAndFlush(waffle);
     return waffle;

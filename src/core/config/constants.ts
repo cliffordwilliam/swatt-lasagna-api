@@ -3,7 +3,7 @@ import { z } from "zod";
 
 dotenv.config();
 
-const envSchema = z.object({
+const EnvSchema = z.object({
   DATABASE_URL: z.string(),
   NODE_ENV: z.string(),
   PORT: z.coerce.number(),
@@ -11,7 +11,7 @@ const envSchema = z.object({
 
 function getEnv() {
   try {
-    return envSchema.parse(process.env);
+    return EnvSchema.parse(process.env);
   } catch {
     process.exit(1);
   }

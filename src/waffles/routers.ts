@@ -2,10 +2,13 @@ import { Router } from "express";
 import {
   CreateWaffleResponse,
   ListWaffleResponse,
+  UpdateWaffleResponse,
   WaffleCreateRequest,
   WaffleFilter,
+  WaffleUpdateRequest,
 } from "./schemas/waffle";
 import { ManageWaffle } from "./services/manage_waffle";
+import { IntRequest } from "../common/schemas/int_schema";
 
 const router = Router();
 
@@ -23,6 +26,14 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const waffle = await ManageWaffle.create(WaffleCreateRequest.parse(req.body));
   res.json(CreateWaffleResponse.parse({ success: true, data: waffle }));
+});
+
+router.patch("/:id", async (req, res) => {
+  const waffle = await ManageWaffle.update(
+    WaffleUpdateRequest.parse(req.body),
+    IntRequest.parse(req.params.id),
+  );
+  res.json(UpdateWaffleResponse.parse({ success: true, data: waffle }));
 });
 
 export default router;

@@ -4,7 +4,7 @@ export const ErrorResponse = z.object({
   success: z.boolean(),
   error: z.object({
     message: z.string(),
-    code: z.int().optional(),
+    code: z.string().optional(),
     details: z.unknown().optional(),
   }),
 });

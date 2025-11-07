@@ -8,9 +8,9 @@ export const PaginationRequest = z.object({
     .default("and"),
   page: z.coerce
     .number()
-    .min(1, "Page size must be at least one")
-    .max(100, "Page size cannot exceed 100")
-    .default(10),
+    .min(1, "Page must be at least one")
+    .max(100, "Page cannot exceed 100")
+    .default(1),
   page_size: z.coerce
     .number()
     .min(1, "Page size must be at least one")

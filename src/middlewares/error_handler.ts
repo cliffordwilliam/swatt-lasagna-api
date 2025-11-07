@@ -9,13 +9,13 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ) {
+  console.log(err);
   if (err instanceof ZodError) {
     res.status(400).json(
       ErrorResponse.parse({
         success: false,
         error: {
           message: "Request validation error",
-          code: 123,
           details: err.issues.map((i) => ({
             field: i.path.join("."),
             message: i.message,
@@ -26,5 +26,12 @@ export function errorHandler(
     );
     return;
   }
-  res.status(500).send("global error boundary");
+  res.status(500).json(
+    ErrorResponse.parse({
+      success: false,
+      error: {
+        message: "Internal server error",
+      },
+    }),
+  );
 }
