@@ -10,7 +10,7 @@
 - [x] pick mikroorm where we can control commit and flushes
 - [x] standardized the responses shape, error and usual ones
 - [x] add .env for db config
-- [ ] add pagination
+- [x] add pagination
 - [x] add bash local start
 - [x] add adminer
 - [ ] add logger

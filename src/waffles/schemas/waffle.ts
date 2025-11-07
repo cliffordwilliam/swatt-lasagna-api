@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { SuccessResponse } from "../../api/schemas/api";
+import { ModeSchema } from "../../common/schemas/mode_schema";
+import {
+  PageSchema,
+  PageSizeSchema,
+  PaginationResponse,
+} from "../../common/schemas/pagination_schema";
 
 export const Waffle = z.object({
   waffle_id: z.int(),
@@ -39,11 +45,9 @@ export const WaffleFilter = z.object({
     .string()
     .max(100, "Waffle category is too long")
     .optional(),
-  mode: z
-    .string()
-    .transform((val) => val.toLowerCase())
-    .pipe(z.enum(["and", "or"]))
-    .default("and"),
+  mode: ModeSchema,
+  page: PageSchema,
+  page_size: PageSizeSchema,
 });
 export type WaffleFilter = z.infer<typeof WaffleFilter>;
 
@@ -56,5 +60,8 @@ export type UpdateWaffleResponse = z.infer<typeof UpdateWaffleResponse>;
 export const GetWaffleResponse = SuccessResponse(Waffle);
 export type GetWaffleResponse = z.infer<typeof GetWaffleResponse>;
 
-export const ListWaffleResponse = SuccessResponse(z.array(Waffle));
+export const ListWaffleResponse = SuccessResponse(
+  z.array(Waffle),
+  PaginationResponse,
+);
 export type ListWaffleResponse = z.infer<typeof ListWaffleResponse>;

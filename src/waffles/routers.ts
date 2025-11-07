@@ -12,7 +12,13 @@ const waffleRouter = Router();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 waffleRouter.get("/", async (req, res, _next) => {
   const waffles = await ManageWaffle.list(WaffleFilter.parse(req.query));
-  res.json(ListWaffleResponse.parse({ success: true, data: waffles }));
+  res.json(
+    ListWaffleResponse.parse({
+      success: true,
+      data: waffles.data,
+      meta: waffles.pagination,
+    }),
+  );
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

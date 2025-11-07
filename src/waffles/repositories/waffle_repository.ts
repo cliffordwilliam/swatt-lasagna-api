@@ -5,6 +5,7 @@ import { WaffleFilter } from "../schemas/waffle";
 
 export const WaffleRepository = {
   async list(filters: WaffleFilter) {
+    const em = await getEM();
     const conditions: FilterQuery<WaffleEntity>[] = [];
     if (filters.waffle_name) {
       conditions.push({ waffle_name: { $ilike: `%${filters.waffle_name}%` } });
@@ -16,8 +17,25 @@ export const WaffleRepository = {
     }
     const where: FilterQuery<WaffleEntity> =
       filters.mode === "and" ? { $and: conditions } : { $or: conditions };
-    const em = await getEM();
-    return await em.find(WaffleEntity, where);
+    const offset = (filters.page - 1) * filters.page_size;
+    const total_count = await em.count(WaffleEntity, where);
+    const waffles = await em.find(WaffleEntity, where, {
+      limit: filters.page_size,
+      offset,
+      orderBy: { waffle_id: "asc" },
+    });
+    const total_pages = Math.ceil(total_count / filters.page_size);
+    return {
+      data: waffles,
+      pagination: {
+        page: filters.page,
+        page_size: filters.page_size,
+        total_count: total_count,
+        total_pages: total_pages,
+        has_next: filters.page < total_pages,
+        has_previous: filters.page > 1,
+      },
+    };
   },
 
   async create(waffle: WaffleEntity) {
