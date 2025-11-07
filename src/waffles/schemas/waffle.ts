@@ -4,6 +4,7 @@ import { SuccessResponse } from "../../api/schemas/api";
 export const Waffle = z.object({
   waffle_id: z.int(),
   waffle_name: z.string(),
+  waffle_category: z.string(),
 });
 
 export const WaffleCreateRequest = z.object({
@@ -11,6 +12,10 @@ export const WaffleCreateRequest = z.object({
     .string()
     .min(1, "Waffle name is required")
     .max(100, "Waffle name is too long"),
+  waffle_category: z
+    .string()
+    .min(1, "Waffle category is required")
+    .max(100, "Waffle category is too long"),
 });
 export type WaffleCreateRequest = z.infer<typeof WaffleCreateRequest>;
 
@@ -20,11 +25,25 @@ export const WaffleUpdateRequest = z.object({
     .min(1, "Waffle name is required")
     .max(100, "Waffle name is too long")
     .optional(),
+  waffle_category: z
+    .string()
+    .min(1, "Waffle category is required")
+    .max(100, "Waffle category is too long")
+    .optional(),
 });
 export type WaffleUpdateRequest = z.infer<typeof WaffleUpdateRequest>;
 
 export const WaffleFilter = z.object({
   waffle_name: z.string().max(100, "Waffle name is too long").optional(),
+  waffle_category: z
+    .string()
+    .max(100, "Waffle category is too long")
+    .optional(),
+  mode: z
+    .string()
+    .transform((val) => val.toLowerCase())
+    .pipe(z.enum(["and", "or"]))
+    .default("and"),
 });
 export type WaffleFilter = z.infer<typeof WaffleFilter>;
 

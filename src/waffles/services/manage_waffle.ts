@@ -10,6 +10,7 @@ export const ManageWaffle = {
   async create(waffle_data: WaffleCreateRequest) {
     const waffle = new WaffleEntity();
     waffle.waffle_name = waffle_data.waffle_name;
+    waffle.waffle_category = waffle_data.waffle_category;
     return await WaffleRepository.create(waffle);
   },
 };

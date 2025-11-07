@@ -7,4 +7,7 @@ export class WaffleEntity {
 
   @Property()
   waffle_name!: string;
+
+  @Property()
+  waffle_category!: string;
 }
