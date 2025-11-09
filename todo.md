@@ -14,4 +14,4 @@
 - [x] add bash local start
 - [x] add adminer
 - [ ] add logger
-- [ ] add demon to auto restart app on change, its so annoying
+- [x] add demon to auto restart app on change, its so annoying

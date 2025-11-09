@@ -3,10 +3,6 @@
     "src/**/*.{ts,js}": "eslint",
     "**/*": "prettier --write --ignore-unknown"
   },
-  "engines": {
-    "node": "22.20.0",
-    "npm": "10.9.3"
-  },
   "name": "be-waffle-shop",
   "version": "1.0.0",
   "description": "",
@@ -14,6 +10,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "start": "node dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec \"npm run build && npm start\"",
     "prepare": "husky"
   },
   "keywords": [],
@@ -26,6 +23,7 @@
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
+    "nodemon": "^3.1.10",
     "prettier": "3.6.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3"
