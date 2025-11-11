@@ -5,7 +5,7 @@
 - [x] add git hook to format and lint (default prettier + typescript lint)
 - [x] make 1 resource crud
 - [ ] add unit test and run it on both github action and githook
-- [ ] add postman e2e and run it on both github action and githook
+- [x] add postman e2e and run it on both github action and githook
 - [ ] use github action to run tests, formats and lints
 - [x] pick mikroorm where we can control commit and flushes
 - [x] standardized the responses shape, error and usual ones

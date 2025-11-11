@@ -11,6 +11,7 @@
     "build": "rm -rf dist && tsc",
     "start": "node dist/index.js",
     "dev": "nodemon --watch src --ext ts --exec \"npm run build && npm start\"",
+    "test:api": "newman run postman/postman_collection.json --environment postman/postman_environment.json",
     "prepare": "husky"
   },
   "keywords": [],
@@ -23,6 +24,7 @@
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
+    "newman": "^6.2.1",
     "nodemon": "^3.1.10",
     "prettier": "3.6.2",
     "typescript": "^5.9.3",

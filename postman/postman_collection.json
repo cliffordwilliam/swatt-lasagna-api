@@ -1,0 +1,134 @@
+{
+  "info": {
+    "_postman_id": "388b4348-a74d-49e2-9399-c77a2d7526ef",
+    "name": "Be Waffle Shop",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "28966522"
+  },
+  "item": [
+    {
+      "name": "Waffles",
+      "item": [
+        {
+          "name": "Create a New Waffle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Create a new waffle\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});",
+                  "",
+                  "if (json.data && json.data.waffle_id) {",
+                  "    pm.environment.set(\"waffle_id\", json.data.waffle_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"waffle_name\": \"choco\",\n  \"waffle_category\": \"sour\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/waffles",
+              "host": ["{{base_url}}"],
+              "path": ["waffles"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a Waffle Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Waffle category updated successfully\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.waffle_category).to.eql(pm.environment.get(\"updated_waffle_category\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"waffle_category\": \"{{updated_waffle_category}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/waffles/{{waffle_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["waffles", "{{waffle_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get a Waffle by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Fetched waffle by ID\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.waffle_id).to.eql(Number(pm.environment.get(\"waffle_id\")));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/waffles/{{waffle_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["waffles", "{{waffle_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
