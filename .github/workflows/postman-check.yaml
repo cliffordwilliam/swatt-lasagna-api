@@ -1,0 +1,45 @@
+name: Postman Check
+on: [push]
+jobs:
+  postman-check-action:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: swatt_lasagna_api
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📄 Copy .env
+        run: cp .env.example .env
+
+      - name: 🛠️ Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+
+      - name: 🚀 Start app
+        run: npm ci && npm run build && npm start &
+
+      - name: ⏳ Wait for app to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/healthz > /dev/null; then
+              echo "✅ App is up!"
+              exit 0
+            fi
+            echo "Waiting for app... ($i)"
+            sleep 2
+          done
+          echo "❌ Timed out waiting for app"
+          exit 1
+
+      - name: 🧪 Run Newman E2E Tests
+        run: npm run test:api

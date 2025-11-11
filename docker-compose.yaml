@@ -6,7 +6,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: be_waffle_shop
+      POSTGRES_DB: swatt_lasagna_api
 
   adminer:
     image: adminer

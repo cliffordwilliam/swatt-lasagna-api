@@ -16,6 +16,10 @@ import { env } from "./core/config/constants";
 
   app.use(errorHandler);
 
+  app.get("/healthz", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   app.listen(env.PORT, () => {
     console.log(`Server running at http://localhost:${env.PORT}/`);
   });
