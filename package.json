@@ -3,7 +3,7 @@
     "src/**/*.{ts,js}": "eslint",
     "**/*": "prettier --write --ignore-unknown"
   },
-  "name": "be-waffle-shop",
+  "name": "swatt-lasagna-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
