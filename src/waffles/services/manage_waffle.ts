@@ -12,6 +12,10 @@ export const ManageWaffle = {
     return await WaffleRepository.list(filters);
   },
 
+  async get_by_id(waffle_id: number) {
+    return await WaffleRepository.get_by_id_or_fail(waffle_id);
+  },
+
   async update(updates: WaffleUpdateRequest, waffle_id: number) {
     const existing_waffle = await WaffleRepository.get_by_id_or_fail(waffle_id);
     Object.assign(existing_waffle, filterDefinedValues(updates));

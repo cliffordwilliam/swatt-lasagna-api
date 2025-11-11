@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   CreateWaffleResponse,
+  GetWaffleResponse,
   ListWaffleResponse,
   UpdateWaffleResponse,
   WaffleCreateRequest,
@@ -21,6 +22,11 @@ router.get("/", async (req, res) => {
       meta: waffles.pagination,
     }),
   );
+});
+
+router.get("/:id", async (req, res) => {
+  const waffle = await ManageWaffle.get_by_id(IntRequest.parse(req.params.id));
+  res.json(GetWaffleResponse.parse({ success: true, data: waffle }));
 });
 
 router.post("/", async (req, res) => {
