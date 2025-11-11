@@ -6,7 +6,7 @@
 - [x] make 1 resource crud
 - [x] add unit test and run it on github action
 - [x] add postman e2e and run it on github action
-- [ ] use github action to run tests, formats and lints
+- [x] use github action to run tests, formats and lints
 - [x] pick mikroorm where we can control commit and flushes
 - [x] standardized the responses shape, error and usual ones
 - [x] add .env for db config
