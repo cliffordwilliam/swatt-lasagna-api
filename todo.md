@@ -17,3 +17,4 @@
 - [x] add demon to auto restart app on change, its so annoying
 - [ ] delete all waffle stuff, work on the real business schema
 - [ ] add auth
+- [ ] add sort by in list filter
