@@ -1,7 +1,7 @@
 import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 
 @Entity()
-export class ItemEntity {
+export class PersonEntity {
   @PrimaryKey()
   id!: number;
 
@@ -9,7 +9,10 @@ export class ItemEntity {
   name!: string;
 
   @Property()
-  price!: number;
+  address!: string;
+
+  @Property()
+  phone_number!: string;
 
   @Property({ onCreate: () => new Date() })
   created_at!: Date;

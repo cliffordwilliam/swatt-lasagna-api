@@ -1,15 +1,30 @@
 import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 
 @Entity()
-export class ItemEntity {
+export class OrderEntity {
   @PrimaryKey()
   id!: number;
 
   @Property()
-  name!: string;
+  po!: string;
 
   @Property()
-  price!: number;
+  order_date!: Date;
+
+  @Property()
+  delivery_date!: Date;
+
+  @Property()
+  total_purchase!: number;
+
+  @Property()
+  shipping_cost!: number;
+
+  @Property()
+  grand_total!: number;
+
+  @Property()
+  note!: string;
 
   @Property({ onCreate: () => new Date() })
   created_at!: Date;
