@@ -1,0 +1,66 @@
+import { z } from "zod";
+import { SuccessResponse } from "../../api/schemas/api";
+import {
+  PaginationRequest,
+  PaginationResponse,
+} from "../../common/schemas/pagination-request";
+import { SortOrderRequest } from "../../common/schemas/sort-order-request";
+
+// Entity schema
+export const <ENTITY_CLASS> = z.object({
+  <ENTITY_PREFIX>Id: z.int(),
+  <ENTITY_PREFIX>Name: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const <ENTITY_CLASS>SortFieldRequest = z.object({
+  sortField: z
+    .enum([ "<ENTITY_PREFIX>Id", "<ENTITY_PREFIX>Name" ])
+    .default("<ENTITY_PREFIX>Name"),
+});
+
+export const <ENTITY_CLASS>CreateRequest = z.object({
+  <ENTITY_PREFIX>Name: z
+    .string()
+    .min(1, "<ENTITY_PREFIX> name is required")
+    .max(100, "<ENTITY_PREFIX> name is too long"),
+});
+export type <ENTITY_CLASS>CreateRequest = z.infer<typeof <ENTITY_CLASS>CreateRequest>;
+
+export const <ENTITY_CLASS>UpdateRequest = z.object({
+  <ENTITY_PREFIX>Name: z
+    .string()
+    .min(1, "<ENTITY_PREFIX> name is required")
+    .max(100, "<ENTITY_PREFIX> name is too long")
+    .optional(),
+});
+export type <ENTITY_CLASS>UpdateRequest = z.infer<typeof <ENTITY_CLASS>UpdateRequest>;
+
+export const <ENTITY_CLASS>Filter = z
+  .object({
+    <ENTITY_PREFIX>Name: z
+      .string()
+      .max(100, "<ENTITY_PREFIX> name is too long")
+      .optional(),
+  })
+  .extend(SortOrderRequest.shape)
+  .extend(<ENTITY_CLASS>SortFieldRequest.shape)
+  .extend(PaginationRequest.shape);
+export type <ENTITY_CLASS>Filter = z.infer<typeof <ENTITY_CLASS>Filter>;
+
+export const Create<ENTITY_CLASS>Response = SuccessResponse(<ENTITY_CLASS>);
+export type Create<ENTITY_CLASS>Response = z.infer<typeof Create<ENTITY_CLASS>Response>;
+
+export const Update<ENTITY_CLASS>Response = SuccessResponse(<ENTITY_CLASS>);
+export type Update<ENTITY_CLASS>Response = z.infer<typeof Update<ENTITY_CLASS>Response>;
+
+export const Get<ENTITY_CLASS>Response = SuccessResponse(<ENTITY_CLASS>);
+export type Get<ENTITY_CLASS>Response = z.infer<typeof Get<ENTITY_CLASS>Response>;
+
+export const List<ENTITY_CLASS>Response = SuccessResponse(
+  z.array(<ENTITY_CLASS>),
+  PaginationResponse,
+);
+export type List<ENTITY_CLASS>Response = z.infer<typeof List<ENTITY_CLASS>Response>;
+

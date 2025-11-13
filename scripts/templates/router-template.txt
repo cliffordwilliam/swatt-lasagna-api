@@ -1,0 +1,46 @@
+import { Router } from "express";
+import {
+  <ENTITY_CLASS>CreateRequest,
+  <ENTITY_CLASS>Filter,
+  <ENTITY_CLASS>UpdateRequest,
+  List<ENTITY_CLASS>Response,
+  Get<ENTITY_CLASS>Response,
+  Create<ENTITY_CLASS>Response,
+  Update<ENTITY_CLASS>Response,
+} from "./schemas/<DOMAIN_NAME>";
+import { Manage<ENTITY_CLASS> } from "./services/manage-<DOMAIN_NAME>";
+import { IntRequest } from "../common/schemas/int-request";
+
+const router = Router();
+
+router.get("/", async (req, res) => {
+  const entities = await Manage<ENTITY_CLASS>.list(<ENTITY_CLASS>Filter.parse(req.query));
+  res.json(
+    List<ENTITY_CLASS>Response.parse({
+      success: true,
+      data: entities.data,
+      meta: entities.pagination,
+    }),
+  );
+});
+
+router.get("/:id", async (req, res) => {
+  const entity = await Manage<ENTITY_CLASS>.getById(IntRequest.parse(req.params.id));
+  res.json(Get<ENTITY_CLASS>Response.parse({ success: true, data: entity }));
+});
+
+router.post("/", async (req, res) => {
+  const entity = await Manage<ENTITY_CLASS>.create(<ENTITY_CLASS>CreateRequest.parse(req.body));
+  res.json(Create<ENTITY_CLASS>Response.parse({ success: true, data: entity }));
+});
+
+router.patch("/:id", async (req, res) => {
+  const entity = await Manage<ENTITY_CLASS>.update(
+    <ENTITY_CLASS>UpdateRequest.parse(req.body),
+    IntRequest.parse(req.params.id),
+  );
+  res.json(Update<ENTITY_CLASS>Response.parse({ success: true, data: entity }));
+});
+
+export default router;
+
