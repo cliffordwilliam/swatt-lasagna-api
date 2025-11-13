@@ -1,6 +1,6 @@
 import { MikroORM } from "@mikro-orm/postgresql";
-import { config } from "../config/mikro-orm.config";
-import { env } from "../config/constants";
+import { MIKRO_ORM_CONFIG } from "../config/mikro-orm.config";
+import { ENV } from "../config/constants";
 import logger from "../logging/logger";
 
 let orm: MikroORM | null = null;
@@ -8,8 +8,8 @@ let orm: MikroORM | null = null;
 export async function getORM() {
   if (!orm) {
     try {
-      orm = await MikroORM.init(config);
-      if (env.NODE_ENV === "development") {
+      orm = await MikroORM.init(MIKRO_ORM_CONFIG);
+      if (ENV.NODE_ENV === "development") {
         await orm.getSchemaGenerator().updateSchema();
       }
     } catch (e) {

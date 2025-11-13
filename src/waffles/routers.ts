@@ -8,8 +8,8 @@ import {
   WaffleFilter,
   WaffleUpdateRequest,
 } from "./schemas/waffle";
-import { ManageWaffle } from "./services/manage_waffle";
-import { IntRequest } from "../common/schemas/int_request";
+import { ManageWaffle } from "./services/manage-waffle";
+import { IntRequest } from "../common/schemas/int-request";
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const waffle = await ManageWaffle.get_by_id(IntRequest.parse(req.params.id));
+  const waffle = await ManageWaffle.getById(IntRequest.parse(req.params.id));
   res.json(GetWaffleResponse.parse({ success: true, data: waffle }));
 });
 

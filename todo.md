@@ -19,3 +19,10 @@
 - [ ] add auth
 - [x] add sort by in list filter
 - [ ] make a cli to make making new domain easier, just replace the word waffle with dynamic param
+- [ ] fix inconsistent naming convention
+
+* **Files & folders:** `kebab-case`
+* **Variables & functions:** `camelCase`
+* **Classes & types:** `PascalCase`
+* **Constants & env vars:** `UPPER_SNAKE_CASE`
+* **Tests:** mirror source, end with `.test.ts`

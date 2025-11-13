@@ -4,7 +4,7 @@ import logger from "../logging/logger";
 
 dotenv.config();
 
-const EnvSchema = z.object({
+const ENV_SCHEMA = z.object({
   DATABASE_URL: z.string(),
   NODE_ENV: z.string(),
   PORT: z.coerce.number(),
@@ -12,11 +12,11 @@ const EnvSchema = z.object({
 
 function getEnv() {
   try {
-    return EnvSchema.parse(process.env);
+    return ENV_SCHEMA.parse(process.env);
   } catch (e) {
     logger.error({ err: e }, "Invalid .env shape");
     process.exit(1);
   }
 }
 
-export const env = getEnv();
+export const ENV = getEnv();

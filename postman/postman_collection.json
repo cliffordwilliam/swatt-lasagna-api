@@ -23,8 +23,8 @@
                   "    pm.expect(json.success).to.eql(true);",
                   "});",
                   "",
-                  "if (json.data && json.data.waffle_id) {",
-                  "    pm.environment.set(\"waffle_id\", json.data.waffle_id);",
+                  "if (json.data && json.data.waffleId) {",
+                  "    pm.environment.set(\"waffle_id\", json.data.waffleId);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -41,7 +41,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"waffle_name\": \"choco\",\n  \"waffle_category\": \"sour\"\n}",
+              "raw": "{\n  \"waffleName\": \"choco\",\n  \"waffleCategory\": \"sour\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -68,7 +68,7 @@
                   "pm.test(\"Waffle category updated successfully\", function () {",
                   "    pm.expect(pm.response.code).to.eql(200);",
                   "    pm.expect(json.success).to.eql(true);",
-                  "    pm.expect(json.data.waffle_category).to.eql(pm.environment.get(\"updated_waffle_category\"));",
+                  "    pm.expect(json.data.waffleCategory).to.eql(pm.environment.get(\"updated_waffle_category\"));",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -85,7 +85,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"waffle_category\": \"{{updated_waffle_category}}\"\n}",
+              "raw": "{\n  \"waffleCategory\": \"{{updated_waffle_category}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -111,7 +111,7 @@
                   "pm.test(\"Fetched waffle by ID\", function () {",
                   "    pm.expect(pm.response.code).to.eql(200);",
                   "    pm.expect(json.success).to.eql(true);",
-                  "    pm.expect(json.data.waffle_id).to.eql(Number(pm.environment.get(\"waffle_id\")));",
+                  "    pm.expect(json.data.waffleId).to.eql(Number(pm.environment.get(\"waffle_id\")));",
                   "});"
                 ],
                 "type": "text/javascript"

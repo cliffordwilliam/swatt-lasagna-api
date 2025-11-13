@@ -1,9 +1,9 @@
 import { Options, PostgreSqlDriver } from "@mikro-orm/postgresql";
-import { env } from "./constants";
+import { ENV } from "./constants";
 
-export const config: Options = {
+export const MIKRO_ORM_CONFIG: Options = {
   driver: PostgreSqlDriver,
-  clientUrl: env.DATABASE_URL,
+  clientUrl: ENV.DATABASE_URL,
   entities: ["dist/**/*.entity.js"],
   entitiesTs: ["src/**/*.entity.ts"],
 };

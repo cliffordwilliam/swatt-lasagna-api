@@ -1,5 +1,5 @@
-import { filterDefinedValues } from "../../../src/common/utils/defined_entries";
-import { WaffleRepository } from "../../../src/waffles/repositories/waffle_repository";
+import { filterDefinedValues } from "../../../src/common/utils/defined-entries";
+import { WaffleRepository } from "../../../src/waffles/repositories/waffle-repository";
 import { WaffleEntity } from "../../../src/waffles/entities/waffle.entity";
 import { getEM } from "../../../src/core/database/adapter";
 
@@ -18,13 +18,13 @@ describe("WaffleRepository", () => {
   });
 
   it("should successfully save a valid waffle", async () => {
-    const waffle_data = {
-      waffle_name: "choco",
-      waffle_category: "sour",
+    const waffleData = {
+      waffleName: "choco",
+      waffleCategory: "sour",
     };
 
     const waffleEntity = new WaffleEntity();
-    Object.assign(waffleEntity, filterDefinedValues(waffle_data));
+    Object.assign(waffleEntity, filterDefinedValues(waffleData));
 
     const savedWaffle = await WaffleRepository.save(waffleEntity);
 

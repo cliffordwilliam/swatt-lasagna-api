@@ -3,45 +3,45 @@ import { SuccessResponse } from "../../api/schemas/api";
 import {
   PaginationRequest,
   PaginationResponse,
-} from "../../common/schemas/pagination_request";
-import { WaffleEnum } from "../../common/enums/waffle_enum";
-import { SortOrderRequest } from "../../common/schemas/sort_order_request";
+} from "../../common/schemas/pagination-request";
+import { WaffleEnum } from "../../common/enums/waffle-enum";
+import { SortOrderRequest } from "../../common/schemas/sort-order-request";
 
 export const Waffle = z.object({
-  waffle_id: z.int(),
-  waffle_name: z.string(),
-  waffle_category: WaffleEnum,
+  waffleId: z.int(),
+  waffleName: z.string(),
+  waffleCategory: WaffleEnum,
 });
 
 export const WaffleSortFieldRequest = z.object({
-  sort_field: z
-    .enum(["waffle_id", "waffle_name", "waffle_category"])
-    .default("waffle_name"),
+  sortField: z
+    .enum(["waffleId", "waffleName", "waffleCategory"])
+    .default("waffleName"),
 });
 
 export const WaffleCreateRequest = z.object({
-  waffle_name: z
+  waffleName: z
     .string()
     .min(1, "Waffle name is required")
     .max(15, "Waffle name is too long"),
-  waffle_category: WaffleEnum,
+  waffleCategory: WaffleEnum,
 });
 export type WaffleCreateRequest = z.infer<typeof WaffleCreateRequest>;
 
 export const WaffleUpdateRequest = z.object({
-  waffle_name: z
+  waffleName: z
     .string()
     .min(1, "Waffle name is required")
     .max(15, "Waffle name is too long")
     .optional(),
-  waffle_category: WaffleEnum.optional(),
+  waffleCategory: WaffleEnum.optional(),
 });
 export type WaffleUpdateRequest = z.infer<typeof WaffleUpdateRequest>;
 
 export const WaffleFilter = z
   .object({
-    waffle_name: z.string().max(15, "Waffle name is too long").optional(),
-    waffle_category: z
+    waffleName: z.string().max(15, "Waffle name is too long").optional(),
+    waffleCategory: z
       .string()
       .max(15, "Waffle category is too long")
       .optional(),

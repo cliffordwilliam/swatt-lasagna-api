@@ -2,12 +2,12 @@ import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 
 @Entity()
 export class WaffleEntity {
-  @PrimaryKey()
-  waffle_id!: number;
+  @PrimaryKey({ fieldName: "waffle_id" })
+  waffleId!: number;
 
-  @Property()
-  waffle_name!: string;
+  @Property({ fieldName: "waffle_name" })
+  waffleName!: string;
 
-  @Property()
-  waffle_category!: string;
+  @Property({ fieldName: "waffle_category" })
+  waffleCategory!: string;
 }
