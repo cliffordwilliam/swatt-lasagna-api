@@ -26,10 +26,16 @@ export const WaffleRepository = {
     const where: FilterQuery<WaffleEntity> =
       filters.mode === "and" ? { $and: conditions } : { $or: conditions };
 
+    const sort_field = {
+      waffle_id: "waffle_id",
+      waffle_name: "waffle_name",
+      waffle_category: "waffle_category",
+    }[filters.sort_field];
+
     const [waffles, total_count] = await em.findAndCount(WaffleEntity, where, {
       limit: filters.page_size,
       offset: (filters.page - 1) * filters.page_size,
-      orderBy: { waffle_id: "asc" },
+      orderBy: { [sort_field]: filters.sort_order },
     });
 
     const total_pages = Math.ceil(total_count / filters.page_size);

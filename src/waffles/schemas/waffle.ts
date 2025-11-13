@@ -5,11 +5,18 @@ import {
   PaginationResponse,
 } from "../../common/schemas/pagination_request";
 import { WaffleEnum } from "../../common/enums/waffle_enum";
+import { SortOrderRequest } from "../../common/schemas/sort_order_request";
 
 export const Waffle = z.object({
   waffle_id: z.int(),
   waffle_name: z.string(),
   waffle_category: WaffleEnum,
+});
+
+export const WaffleSortFieldRequest = z.object({
+  sort_field: z
+    .enum(["waffle_id", "waffle_name", "waffle_category"])
+    .default("waffle_name"),
 });
 
 export const WaffleCreateRequest = z.object({
@@ -39,6 +46,8 @@ export const WaffleFilter = z
       .max(15, "Waffle category is too long")
       .optional(),
   })
+  .extend(SortOrderRequest.shape)
+  .extend(WaffleSortFieldRequest.shape)
   .extend(PaginationRequest.shape);
 export type WaffleFilter = z.infer<typeof WaffleFilter>;
 

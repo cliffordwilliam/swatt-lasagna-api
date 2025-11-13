@@ -9,7 +9,7 @@ import {
   WaffleUpdateRequest,
 } from "./schemas/waffle";
 import { ManageWaffle } from "./services/manage_waffle";
-import { IntRequest } from "../common/schemas/int_schema";
+import { IntRequest } from "../common/schemas/int_request";
 
 const router = Router();
 
