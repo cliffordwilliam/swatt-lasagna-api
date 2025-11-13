@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
 import { NotFoundError } from "@mikro-orm/core";
 
-export function errorHandler(
+export default function errorHandler(
   err: Error,
   _req: Request,
   res: Response,
@@ -11,7 +11,7 @@ export function errorHandler(
   _next: NextFunction,
 ) {
   if (err instanceof ZodError) {
-    res.status(400).json(
+    res.status(422).json(
       ErrorResponse.parse({
         success: false,
         error: {
@@ -32,6 +32,7 @@ export function errorHandler(
         success: false,
         error: {
           message: err.message,
+          code: "RESOURCE_NOT_FOUND",
         },
       }),
     );

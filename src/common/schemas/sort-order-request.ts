@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 export const SortOrderRequest = z.object({
   sortOrder: z

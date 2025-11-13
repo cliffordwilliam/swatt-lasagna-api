@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import waffleRouter from "./waffles/routers";
-import { errorHandler } from "./middlewares/error-handler";
+import errorHandler from "./middlewares/error-handler";
 import { getORM } from "./core/database/adapter";
 import { ENV } from "./core/config/constants";
 import httpLogger from "./middlewares/http-logger";

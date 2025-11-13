@@ -19,7 +19,7 @@
 - [ ] add auth
 - [x] add sort by in list filter
 - [ ] make a cli to make making new domain easier, just replace the word waffle with dynamic param
-- [ ] fix inconsistent naming convention
+- [x] fix inconsistent naming convention
 
 * **Files & folders:** `kebab-case`
 * **Variables & functions:** `camelCase`
