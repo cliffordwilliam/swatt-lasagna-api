@@ -18,7 +18,7 @@
 - [ ] delete all waffle stuff, work on the real business schema
 - [ ] add auth
 - [x] add sort by in list filter
-- [ ] make a cli to make making new domain easier, just replace the word waffle with dynamic param
+- [x] make a cli to make making new domain easier, just replace the word waffle with dynamic param
 - [x] fix inconsistent naming convention
 
 * **Files & folders:** `kebab-case`

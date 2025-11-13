@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import express from "express";
+import itemRouter from "./item/routers";
 import waffleRouter from "./waffles/routers";
 import errorHandler from "./middlewares/error-handler";
 import { getORM } from "./core/database/adapter";
@@ -16,6 +17,7 @@ import logger from "./core/logging/logger";
 
   app.use(express.json());
 
+  app.use("/item", itemRouter);
   app.use("/waffles", waffleRouter);
 
   app.use(errorHandler);

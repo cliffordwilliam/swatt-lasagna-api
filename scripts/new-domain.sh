@@ -12,8 +12,11 @@ fi
 DOMAIN_NAME="$1"
 DOMAIN_DIR="$SRC_DIR/$DOMAIN_NAME"
 
+# Convert to kebab-case for file names
+DOMAIN_NAME_KABAB=$(echo "$DOMAIN_NAME" | sed 's/_/-/g' | tr '[:upper:]' '[:lower:]')
+
 CLASS_NAME="$(tr '[:lower:]' '[:upper:]' <<< "${DOMAIN_NAME:0:1}")${DOMAIN_NAME:1}"
-ENTITY_CLASS="${CLASS_NAME}Entity"
+ENTITY_CLASS="${CLASS_NAME}"  # No need to append 'Entity' here
 ENTITY_PREFIX="${DOMAIN_NAME,,}"
 
 echo "📦 Creating domain: $DOMAIN_NAME"
@@ -25,7 +28,7 @@ for dir in "${SUBDIRS[@]}"; do
 done
 
 # Generate Entity file
-ENTITY_FILE="$DOMAIN_DIR/entities/${DOMAIN_NAME}.entity.ts"
+ENTITY_FILE="$DOMAIN_DIR/entities/${DOMAIN_NAME_KABAB}.entity.ts"  # Use kebab-case
 TEMPLATE_FILE="./scripts/templates/entity-template.txt"
 TEMPLATE_CONTENT=$(<"$TEMPLATE_FILE")
 
@@ -36,7 +39,7 @@ REPLACED_CONTENT="${REPLACED_CONTENT//<ENTITY_PREFIX>/${ENTITY_PREFIX}}"
 echo "$REPLACED_CONTENT" > "$ENTITY_FILE"
 
 # Generate Repository file
-REPO_FILE="$DOMAIN_DIR/repositories/${DOMAIN_NAME}_repository.ts"
+REPO_FILE="$DOMAIN_DIR/repositories/${DOMAIN_NAME_KABAB}-repository.ts"  # Use kebab-case
 REPOSITORY_TEMPLATE_FILE="./scripts/templates/repository-template.txt"
 REPOSITORY_TEMPLATE_CONTENT=$(<"$REPOSITORY_TEMPLATE_FILE")
 
@@ -48,7 +51,7 @@ REPLACED_REPO_CONTENT="${REPLACED_REPO_CONTENT//<DOMAIN_NAME^>/${DOMAIN_NAME^}}"
 echo "$REPLACED_REPO_CONTENT" > "$REPO_FILE"
 
 # Generate Schema file
-SCHEMA_FILE="$DOMAIN_DIR/schemas/${DOMAIN_NAME}.ts"
+SCHEMA_FILE="$DOMAIN_DIR/schemas/${DOMAIN_NAME_KABAB}.ts"  # Use kebab-case
 SCHEMA_TEMPLATE_FILE="./scripts/templates/schema-template.txt"
 SCHEMA_TEMPLATE_CONTENT=$(<"$SCHEMA_TEMPLATE_FILE")
 
@@ -59,7 +62,7 @@ REPLACED_SCHEMA_CONTENT="${REPLACED_SCHEMA_CONTENT//<ENTITY_PREFIX>/${ENTITY_PRE
 echo "$REPLACED_SCHEMA_CONTENT" > "$SCHEMA_FILE"
 
 # Generate Service file
-SERVICE_FILE="$DOMAIN_DIR/services/manage_${DOMAIN_NAME}.ts"
+SERVICE_FILE="$DOMAIN_DIR/services/manage-${DOMAIN_NAME_KABAB}.ts"  # Use kebab-case
 SERVICE_TEMPLATE_FILE="./scripts/templates/service-template.txt"
 SERVICE_TEMPLATE_CONTENT=$(<"$SERVICE_TEMPLATE_FILE")
 
