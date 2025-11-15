@@ -73,7 +73,7 @@ describe("ItemRepository", () => {
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
-        { $and: [] },
+        {},
         {
           limit: 10,
           offset: 0,
@@ -105,7 +105,7 @@ describe("ItemRepository", () => {
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
         {
-          $and: [{ itemName: { $ilike: "%test%" } }, { price: undefined }],
+          $and: [{ itemName: { $ilike: "%test%" } }],
         },
         {
           limit: 10,
@@ -146,6 +146,35 @@ describe("ItemRepository", () => {
       expect(result.data).toBe(mockItems);
     });
 
+    it("should list items with price filter only", async () => {
+      const filters = {
+        price: 100,
+        page: 1,
+        pageSize: 10,
+        sortField: "itemName" as const,
+        sortOrder: "asc" as const,
+        mode: "and" as const,
+      };
+
+      const mockItems = [new Item()];
+      mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
+
+      const result = await ItemRepository.list(filters);
+
+      expect(mockEm.findAndCount).toHaveBeenCalledWith(
+        Item,
+        {
+          $and: [{ price: 100 }],
+        },
+        {
+          limit: 10,
+          offset: 0,
+          orderBy: { itemName: "asc" },
+        },
+      );
+      expect(result.data).toBe(mockItems);
+    });
+
     it("should list items with or mode", async () => {
       const filters = {
         itemName: "test",
@@ -164,7 +193,37 @@ describe("ItemRepository", () => {
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
         {
-          $or: [{ itemName: { $ilike: "%test%" } }, { price: undefined }],
+          $or: [{ itemName: { $ilike: "%test%" } }],
+        },
+        {
+          limit: 10,
+          offset: 0,
+          orderBy: { itemName: "asc" },
+        },
+      );
+      expect(result.data).toBe(mockItems);
+    });
+
+    it("should list items with itemName and price filters in or mode", async () => {
+      const filters = {
+        itemName: "test",
+        price: 100,
+        page: 1,
+        pageSize: 10,
+        sortField: "itemName" as const,
+        sortOrder: "asc" as const,
+        mode: "or" as const,
+      };
+
+      const mockItems = [new Item()];
+      mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
+
+      const result = await ItemRepository.list(filters);
+
+      expect(mockEm.findAndCount).toHaveBeenCalledWith(
+        Item,
+        {
+          $or: [{ itemName: { $ilike: "%test%" } }, { price: 100 }],
         },
         {
           limit: 10,
@@ -191,7 +250,7 @@ describe("ItemRepository", () => {
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
-        { $and: [] },
+        {},
         {
           limit: 10,
           offset: 0,
@@ -217,7 +276,7 @@ describe("ItemRepository", () => {
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
-        { $and: [] },
+        {},
         {
           limit: 10,
           offset: 0,
@@ -243,7 +302,7 @@ describe("ItemRepository", () => {
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
-        { $and: [] },
+        {},
         {
           limit: 5,
           offset: 5,

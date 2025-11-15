@@ -15,11 +15,18 @@ export const ItemRepository = {
 
     if (filters.itemName) {
       conditions.push({ itemName: { $ilike: `%${filters.itemName}%` } });
+    }
+
+    if (filters.price !== undefined) {
       conditions.push({ price: filters.price });
     }
 
     const where: FilterQuery<Item> =
-      filters.mode === "and" ? { $and: conditions } : { $or: conditions };
+      conditions.length === 0
+        ? {}
+        : filters.mode === "and"
+          ? { $and: conditions }
+          : { $or: conditions };
 
     const sortFieldMap: Record<string, keyof Item> = {
       itemName: "itemName",

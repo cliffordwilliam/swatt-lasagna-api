@@ -18,7 +18,11 @@ export const <ENTITY_CLASS>Repository = {
     }
 
     const where: FilterQuery<<ENTITY_CLASS>> =
-      filters.mode === "and" ? { $and: conditions } : { $or: conditions };
+      conditions.length === 0
+        ? {}
+        : filters.mode === "and"
+          ? { $and: conditions }
+          : { $or: conditions };
 
     const sortFieldMap: Record<string, keyof <ENTITY_CLASS>> = {
       <ENTITY_PREFIX>Name: "<ENTITY_PREFIX>Name",
