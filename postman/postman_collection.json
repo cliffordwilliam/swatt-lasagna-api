@@ -7,10 +7,10 @@
   },
   "item": [
     {
-      "name": "Waffles",
+      "name": "Item",
       "item": [
         {
-          "name": "Create a New Waffle",
+          "name": "Create a New Item",
           "event": [
             {
               "listen": "test",
@@ -18,13 +18,13 @@
                 "exec": [
                   "const json = pm.response.json();",
                   "",
-                  "pm.test(\"Create a new waffle\", function () {",
+                  "pm.test(\"Create a new item\", function () {",
                   "    pm.expect(pm.response.code).to.eql(200);",
                   "    pm.expect(json.success).to.eql(true);",
                   "});",
                   "",
-                  "if (json.data && json.data.waffleId) {",
-                  "    pm.environment.set(\"waffle_id\", json.data.waffleId);",
+                  "if (json.data && json.data.itemId) {",
+                  "    pm.environment.set(\"item_id\", json.data.itemId);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -41,7 +41,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"waffleName\": \"choco\",\n  \"waffleCategory\": \"sour\"\n}",
+              "raw": "{\n  \"itemName\": \"asd\",\n  \"price\": 123\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -49,15 +49,15 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/waffles",
+              "raw": "{{base_url}}/item",
               "host": ["{{base_url}}"],
-              "path": ["waffles"]
+              "path": ["item"]
             }
           },
           "response": []
         },
         {
-          "name": "Update a Waffle Category",
+          "name": "Update an Item",
           "event": [
             {
               "listen": "test",
@@ -65,10 +65,10 @@
                 "exec": [
                   "const json = pm.response.json();",
                   "",
-                  "pm.test(\"Waffle category updated successfully\", function () {",
+                  "pm.test(\"Item updated successfully\", function () {",
                   "    pm.expect(pm.response.code).to.eql(200);",
                   "    pm.expect(json.success).to.eql(true);",
-                  "    pm.expect(json.data.waffleCategory).to.eql(pm.environment.get(\"updated_waffle_category\"));",
+                  "    pm.expect(json.data.price).to.eql(Number(pm.environment.get(\"updated_item_price\")));",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -85,7 +85,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"waffleCategory\": \"{{updated_waffle_category}}\"\n}",
+              "raw": "{\n  \"itemName\": \"new\",\n  \"price\": 999\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -93,14 +93,14 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/waffles/{{waffle_id}}",
+              "raw": "{{base_url}}/item/{{item_id}}",
               "host": ["{{base_url}}"],
-              "path": ["waffles", "{{waffle_id}}"]
+              "path": ["item", "{{item_id}}"]
             }
           }
         },
         {
-          "name": "Get a Waffle by ID",
+          "name": "Get an Item by ID",
           "event": [
             {
               "listen": "test",
@@ -108,10 +108,10 @@
                 "exec": [
                   "const json = pm.response.json();",
                   "",
-                  "pm.test(\"Fetched waffle by ID\", function () {",
+                  "pm.test(\"Get an Item by ID\", function () {",
                   "    pm.expect(pm.response.code).to.eql(200);",
                   "    pm.expect(json.success).to.eql(true);",
-                  "    pm.expect(json.data.waffleId).to.eql(Number(pm.environment.get(\"waffle_id\")));",
+                  "    pm.expect(json.data.itemId).to.eql(Number(pm.environment.get(\"item_id\")));",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -122,9 +122,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/waffles/{{waffle_id}}",
+              "raw": "{{base_url}}/item/{{item_id}}",
               "host": ["{{base_url}}"],
-              "path": ["waffles", "{{waffle_id}}"]
+              "path": ["item", "{{item_id}}"]
             }
           }
         }

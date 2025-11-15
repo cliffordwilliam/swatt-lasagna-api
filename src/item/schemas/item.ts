@@ -24,7 +24,8 @@ export const ItemCreateRequest = z.object({
     .min(1, "item name is required")
     .max(100, "item name is too long"),
 
-  price: z
+  price: z.coerce
+    .number()
     .int()
     .min(1, "price is required")
     .max(50_000_000, "price is too big"),
@@ -38,7 +39,8 @@ export const ItemUpdateRequest = z.object({
     .max(100, "item name is too long")
     .optional(),
 
-  price: z
+  price: z.coerce
+    .number()
     .int()
     .min(1, "price is required")
     .max(50_000_000, "price is too big")
