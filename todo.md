@@ -20,7 +20,8 @@
 - [x] add sort by in list filter
 - [x] make a cli to make making new domain easier, just replace the word waffle with dynamic param
 - [x] fix inconsistent naming convention
-- [ ] add swagger
+- [x] add swagger
+- [ ] increase unit test to 100%
 
 * **Files & folders:** `kebab-case`
 * **Variables & functions:** `camelCase`

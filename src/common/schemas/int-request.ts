@@ -1,3 +1,3 @@
 import { z } from "zod";
 
-export const IntRequest = z.coerce.number();
+export const IntRequest = z.coerce.number().meta({ id: "IntRequest" });

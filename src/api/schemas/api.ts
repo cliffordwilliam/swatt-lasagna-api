@@ -1,13 +1,15 @@
 import { z } from "zod";
 
-export const ErrorResponse = z.object({
-  success: z.boolean(),
-  error: z.object({
-    message: z.string(),
-    code: z.string().optional(),
-    details: z.unknown().optional(),
-  }),
-});
+export const ErrorResponse = z
+  .object({
+    success: z.boolean(),
+    error: z.object({
+      message: z.string(),
+      code: z.string().optional(),
+      details: z.unknown().optional(),
+    }),
+  })
+  .meta({ id: "ErrorResponse" });
 export type ErrorResponse = z.infer<typeof ErrorResponse>;
 
 export const SuccessResponse = <T extends z.ZodType, M extends z.ZodType>(

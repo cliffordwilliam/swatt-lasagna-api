@@ -6,11 +6,15 @@ import { getORM } from "./core/database/adapter";
 import { ENV } from "./core/config/constants";
 import httpLogger from "./middlewares/http-logger";
 import logger from "./core/logging/logger";
+import openApiDocument from "./core/swagger/swagger";
+import swaggerUi from "swagger-ui-express";
 
 (async () => {
   await getORM();
 
   const app = express();
+
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
   app.use(httpLogger);
 
@@ -26,5 +30,9 @@ import logger from "./core/logging/logger";
 
   app.listen(ENV.PORT, () => {
     logger.info({ port: ENV.PORT }, "Server listening");
+    logger.info("Documentation at: http://localhost:3000/docs");
+    logger.info(
+      "Adminer at: http://localhost:8080/?pgsql=postgres&username=postgres&db=be_waffle_shop&password=postgres",
+    );
   });
 })();

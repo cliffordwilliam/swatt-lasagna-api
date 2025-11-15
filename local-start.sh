@@ -16,7 +16,5 @@ docker compose up -d
 npm run dev &
 APP_PID=$!
 
-echo "Adminer: http://localhost:8080/?pgsql=postgres&username=postgres&db=be_waffle_shop&password=postgres"
-
 wait $APP_PID
 
