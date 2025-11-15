@@ -23,6 +23,7 @@
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
@@ -38,7 +39,6 @@
   "dependencies": {
     "@mikro-orm/core": "^6.5.9",
     "@mikro-orm/postgresql": "^6.5.9",
-    "@types/swagger-ui-express": "^4.1.8",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "pino": "^10.1.0",

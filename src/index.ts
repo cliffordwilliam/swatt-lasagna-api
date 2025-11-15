@@ -32,7 +32,7 @@ import swaggerUi from "swagger-ui-express";
     logger.info({ port: ENV.PORT }, "Server listening");
     logger.info("Documentation at: http://localhost:3000/docs");
     logger.info(
-      "Adminer at: http://localhost:8080/?pgsql=postgres&username=postgres&db=be_waffle_shop&password=postgres",
+      "Adminer at: http://localhost:8080/?pgsql=postgres&username=postgres&db=swatt_lasagna_api&password=postgres",
     );
   });
 })();

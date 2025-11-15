@@ -25,8 +25,36 @@ jobs:
         with:
           node-version: 22.20.0
 
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔧 Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: ⏳ Wait for PostgreSQL to be ready
+        run: |
+          RETRY_COUNT=0
+          MAX_RETRIES=30
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+              echo "❌ ERROR: PostgreSQL failed to become ready after $MAX_RETRIES attempts"
+              exit 1
+            fi
+            echo "Waiting for PostgreSQL... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            sleep 1
+          done
+          echo "✅ PostgreSQL is ready!"
+
+      - name: 🗄️ Run database migrations
+        run: |
+          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/dql/schema.sql
+          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/dql/seed.sql
+        env:
+          PGPASSWORD: postgres
+
       - name: 🚀 Start app
-        run: npm ci && npm run build && npm start &
+        run: npm run build && npm start &
 
       - name: ⏳ Wait for app to be ready
         run: |

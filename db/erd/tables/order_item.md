@@ -10,8 +10,8 @@ Junction table that links orders to items, storing the quantity of each item in 
 
 | Column   | Type    | Constraints           | Description                        |
 | -------- | ------- | --------------------- | ---------------------------------- |
-| order_id | STRING  | FOREIGN KEY, NOT NULL | Reference to the order             |
-| item_id  | STRING  | FOREIGN KEY, NOT NULL | Reference to the item              |
+| order_id | INTEGER | FOREIGN KEY, NOT NULL | Reference to the order             |
+| item_id  | INTEGER | FOREIGN KEY, NOT NULL | Reference to the item              |
 | quantity | INTEGER | NOT NULL              | Quantity of the item in this order |
 
 ## Enums
