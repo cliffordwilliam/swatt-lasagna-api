@@ -9,6 +9,12 @@ module.exports = {
   transform: {
     ...tsJestTransformCfg,
   },
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/src/.*/routers.ts",
+    "/src/.*/entities/.*.entity.ts",
+  ],
   coverageThreshold: {
     global: {
       branches: 100,

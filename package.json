@@ -12,7 +12,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon --watch src --ext ts --exec \"npm run build && npm start\"",
     "test:api": "newman run postman/postman_collection.json --environment postman/postman_environment.json",
-    "test": "jest",
+    "test": "jest --coverage",
     "prepare": "husky"
   },
   "keywords": [],
