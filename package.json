@@ -1,6 +1,6 @@
 {
   "lint-staged": {
-    "src/**/*.{ts,js}": "eslint",
+    "{src,test}/**/*.{ts,js}": "eslint",
     "**/*": "prettier --write --ignore-unknown"
   },
   "name": "swatt-lasagna-api",
