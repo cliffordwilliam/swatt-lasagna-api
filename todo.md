@@ -21,7 +21,9 @@
 - [x] make a cli to make making new domain easier, just replace the word waffle with dynamic param
 - [x] fix inconsistent naming convention
 - [x] add swagger
-- [ ] increase unit test to 100%
+- [x] increase unit test to 100%
+- [ ] can 1 person have multi address and phone? if so make table for it
+- [ ] add deleted status, soft delete to all tables that needs it
 
 * **Files & folders:** `kebab-case`
 * **Variables & functions:** `camelCase`
