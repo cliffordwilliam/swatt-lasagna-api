@@ -15,6 +15,7 @@ export const ItemRepository = {
 
     if (filters.itemName) {
       conditions.push({ itemName: { $ilike: `%${filters.itemName}%` } });
+      conditions.push({ price: filters.price });
     }
 
     const where: FilterQuery<Item> =
@@ -22,6 +23,7 @@ export const ItemRepository = {
 
     const sortFieldMap: Record<string, keyof Item> = {
       itemName: "itemName",
+      price: "price",
     };
 
     const sortField = sortFieldMap[filters.sortField] ?? "itemName";

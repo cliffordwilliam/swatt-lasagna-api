@@ -8,6 +8,9 @@ export class Item {
   @Property({ fieldName: "item_name" })
   itemName!: string;
 
+  @Property({ fieldName: "price" })
+  price!: number;
+
   @Property({ fieldName: "created_at" })
   createdAt: Date = new Date();
 
