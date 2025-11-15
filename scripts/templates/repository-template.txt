@@ -20,7 +20,12 @@ export const <ENTITY_CLASS>Repository = {
     const where: FilterQuery<<ENTITY_CLASS>> =
       filters.mode === "and" ? { $and: conditions } : { $or: conditions };
 
-    const sortField = "<ENTITY_PREFIX>Name";
+    const sortFieldMap: Record<string, keyof <ENTITY_CLASS>> = {
+      <ENTITY_PREFIX>Name: "<ENTITY_PREFIX>Name",
+    };
+
+    const sortField =
+      sortFieldMap[filters.sortField] ?? "<ENTITY_PREFIX>Name";
 
     const [entities, totalCount] = await em.findAndCount(<ENTITY_CLASS>, where, {
       limit: filters.pageSize,

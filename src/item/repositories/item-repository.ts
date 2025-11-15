@@ -20,7 +20,11 @@ export const ItemRepository = {
     const where: FilterQuery<Item> =
       filters.mode === "and" ? { $and: conditions } : { $or: conditions };
 
-    const sortField = "itemName";
+    const sortFieldMap: Record<string, keyof Item> = {
+      itemName: "itemName",
+    };
+
+    const sortField = sortFieldMap[filters.sortField] ?? "itemName";
 
     const [entities, totalCount] = await em.findAndCount(Item, where, {
       limit: filters.pageSize,

@@ -6,7 +6,6 @@ import {
 } from "../../common/schemas/pagination-request";
 import { SortOrderRequest } from "../../common/schemas/sort-order-request";
 
-// Entity schema
 export const Item = z.object({
   itemId: z.int(),
   itemName: z.string(),
@@ -15,7 +14,7 @@ export const Item = z.object({
 });
 
 export const ItemSortFieldRequest = z.object({
-  sortField: z.enum(["itemId", "itemName"]).default("itemName"),
+  sortField: z.enum(["itemName"]).default("itemName"),
 });
 
 export const ItemCreateRequest = z.object({

@@ -6,7 +6,6 @@ import {
 } from "../../common/schemas/pagination-request";
 import { SortOrderRequest } from "../../common/schemas/sort-order-request";
 
-// Entity schema
 export const <ENTITY_CLASS> = z.object({
   <ENTITY_PREFIX>Id: z.int(),
   <ENTITY_PREFIX>Name: z.string(),
@@ -16,7 +15,7 @@ export const <ENTITY_CLASS> = z.object({
 
 export const <ENTITY_CLASS>SortFieldRequest = z.object({
   sortField: z
-    .enum([ "<ENTITY_PREFIX>Id", "<ENTITY_PREFIX>Name" ])
+    .enum([ "<ENTITY_PREFIX>Name" ])
     .default("<ENTITY_PREFIX>Name"),
 });
 
