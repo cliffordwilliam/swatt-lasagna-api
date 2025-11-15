@@ -1,4 +1,3 @@
-import { filterDefinedValues } from "../../../src/common/utils/defined-entries";
 import { Item } from "../../../src/item/entities/item.entity";
 import { ItemRepository } from "../../../src/item/repositories/item-repository";
 import { ManageItem } from "../../../src/item/services/manage-item";
@@ -180,12 +179,11 @@ describe("ManageItem", () => {
         price: 150,
       };
 
-      const newItem = new Item();
       (ItemRepository.save as jest.Mock).mockImplementation((item) =>
         Promise.resolve(item),
       );
 
-      const result = await ManageItem.create(itemData);
+      await ManageItem.create(itemData);
 
       expect(ItemRepository.save).toHaveBeenCalled();
       const savedItem = (ItemRepository.save as jest.Mock).mock.calls[0][0];

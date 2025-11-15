@@ -7,7 +7,11 @@ jest.mock("../../../src/core/database/adapter", () => ({
 }));
 
 describe("ItemRepository", () => {
-  let mockEm: any;
+  let mockEm: {
+    persistAndFlush: jest.Mock;
+    findOneOrFail: jest.Mock;
+    findAndCount: jest.Mock;
+  };
 
   beforeEach(() => {
     mockEm = {
@@ -201,7 +205,7 @@ describe("ItemRepository", () => {
       const filters = {
         page: 1,
         pageSize: 10,
-        sortField: "invalid" as any,
+        sortField: "invalid" as unknown as "itemName" | "price",
         sortOrder: "asc" as const,
         mode: "and" as const,
       };

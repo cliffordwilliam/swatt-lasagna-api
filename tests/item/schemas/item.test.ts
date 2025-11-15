@@ -435,8 +435,11 @@ describe("Item Schemas", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(2);
-      expect((result as any).meta.totalCount).toBe(2);
-      expect((result as any).meta.page).toBe(1);
+      const resultWithMeta = result as {
+        meta: { totalCount: number; page: number };
+      };
+      expect(resultWithMeta.meta.totalCount).toBe(2);
+      expect(resultWithMeta.meta.page).toBe(1);
     });
 
     it("should parse valid list response with empty data", () => {
@@ -457,7 +460,8 @@ describe("Item Schemas", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(0);
-      expect((result as any).meta.totalCount).toBe(0);
+      const resultWithMeta = result as { meta: { totalCount: number } };
+      expect(resultWithMeta.meta.totalCount).toBe(0);
     });
   });
 });
