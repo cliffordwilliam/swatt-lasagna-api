@@ -18,5 +18,5 @@
 2. **Run:**
 
    ```bash
-   bash ./local-start.sh
+   ./local-start.sh
    ```
