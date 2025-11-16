@@ -33,23 +33,23 @@ jobs:
 
       - name: ⏳ Wait for PostgreSQL to be ready
         run: |
-          RETRY_COUNT=0
-          MAX_RETRIES=30
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-              echo "❌ ERROR: PostgreSQL failed to become ready after $MAX_RETRIES attempts"
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "✅ PostgreSQL is ready!"
+              exit 0
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ ERROR: PostgreSQL failed to become ready after 30 attempts"
               exit 1
             fi
-            echo "Waiting for PostgreSQL... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            echo "Waiting for PostgreSQL... (attempt $i/30)"
             sleep 1
           done
-          echo "✅ PostgreSQL is ready!"
 
       - name: 🗄️ Run database migrations
         run: |
-          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/dql/schema.sql
-          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/dql/seed.sql
+          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/sql/schema.sql
+          psql -h localhost -p 5432 -U postgres -d swatt_lasagna_api -q -f db/migrations/sql/seed.sql
         env:
           PGPASSWORD: postgres
 

@@ -15,18 +15,18 @@ trap cleanup EXIT
 docker compose up -d
 
 echo "Waiting for PostgreSQL to be ready..."
-RETRY_COUNT=0
-MAX_RETRIES=30
-until docker exec postgres pg_isready -U postgres > /dev/null 2>&1; do
-    RETRY_COUNT=$((RETRY_COUNT + 1))
-    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-        echo "ERROR: PostgreSQL failed to become ready after $MAX_RETRIES attempts"
+for i in {1..30}; do
+    if docker exec postgres pg_isready -U postgres > /dev/null 2>&1; then
+        echo "PostgreSQL is ready!"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo "ERROR: PostgreSQL failed to become ready after 30 attempts"
         exit 1
     fi
-    echo "PostgreSQL is unavailable - sleeping (attempt $RETRY_COUNT/$MAX_RETRIES)"
+    echo "PostgreSQL is unavailable - sleeping (attempt $i/30)"
     sleep 1
 done
-echo "PostgreSQL is ready!"
 
 echo "Running schema.sql..."
 if docker exec -i postgres psql -U postgres -d swatt_lasagna_api -q < db/migrations/sql/schema.sql; then
