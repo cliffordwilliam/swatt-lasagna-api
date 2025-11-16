@@ -1,6 +1,6 @@
 import { Item } from "../../../src/item/entities/item.entity";
-import { ItemRepository } from "../../../src/item/repositories/item-repository";
-import { ManageItem } from "../../../src/item/services/manage-item";
+import { ITEM_REPOSITORY } from "../../../src/item/repositories/item-repository";
+import { MANAGE_ITEM } from "../../../src/item/services/manage-item";
 import {
   ItemCreateRequest,
   ItemFilter,
@@ -8,20 +8,20 @@ import {
 } from "../../../src/item/schemas/item";
 
 jest.mock("../../../src/item/repositories/item-repository", () => ({
-  ItemRepository: {
+  ITEM_REPOSITORY: {
     list: jest.fn(),
     getByIdOrFail: jest.fn(),
     save: jest.fn(),
   },
 }));
 
-describe("ManageItem", () => {
+describe("MANAGE_ITEM", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe("list", () => {
-    it("should call ItemRepository.list with filters", async () => {
+    it("should call ITEM_REPOSITORY.list with filters", async () => {
       const filters: ItemFilter = {
         page: 1,
         pageSize: 10,
@@ -42,27 +42,27 @@ describe("ManageItem", () => {
         },
       };
 
-      (ItemRepository.list as jest.Mock).mockResolvedValue(mockResult);
+      (ITEM_REPOSITORY.list as jest.Mock).mockResolvedValue(mockResult);
 
-      const result = await ManageItem.list(filters);
+      const result = await MANAGE_ITEM.list(filters);
 
-      expect(ItemRepository.list).toHaveBeenCalledWith(filters);
+      expect(ITEM_REPOSITORY.list).toHaveBeenCalledWith(filters);
       expect(result).toBe(mockResult);
     });
   });
 
   describe("getById", () => {
-    it("should call ItemRepository.getByIdOrFail with itemId", async () => {
+    it("should call ITEM_REPOSITORY.getByIdOrFail with itemId", async () => {
       const mockItem = new Item();
       mockItem.itemId = 1;
       mockItem.itemName = "Test Item";
       mockItem.price = 100;
 
-      (ItemRepository.getByIdOrFail as jest.Mock).mockResolvedValue(mockItem);
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(mockItem);
 
-      const result = await ManageItem.getById(1);
+      const result = await MANAGE_ITEM.getById(1);
 
-      expect(ItemRepository.getByIdOrFail).toHaveBeenCalledWith(1);
+      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(1);
       expect(result).toBe(mockItem);
     });
   });
@@ -85,15 +85,15 @@ describe("ManageItem", () => {
       updatedItem.itemName = "Updated Item";
       updatedItem.price = 200;
 
-      (ItemRepository.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         existingItem,
       );
-      (ItemRepository.save as jest.Mock).mockResolvedValue(updatedItem);
+      (ITEM_REPOSITORY.save as jest.Mock).mockResolvedValue(updatedItem);
 
-      const result = await ManageItem.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(updates, itemId);
 
-      expect(ItemRepository.getByIdOrFail).toHaveBeenCalledWith(itemId);
-      expect(ItemRepository.save).toHaveBeenCalled();
+      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(itemId);
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalled();
       expect(result).toBe(updatedItem);
       expect(result.itemName).toBe("Updated Item");
       expect(result.price).toBe(200);
@@ -110,17 +110,17 @@ describe("ManageItem", () => {
       existingItem.itemName = "Original Item";
       existingItem.price = 100;
 
-      (ItemRepository.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         existingItem,
       );
-      (ItemRepository.save as jest.Mock).mockImplementation((item) =>
+      (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((item) =>
         Promise.resolve(item),
       );
 
-      const result = await ManageItem.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(updates, itemId);
 
-      expect(ItemRepository.getByIdOrFail).toHaveBeenCalledWith(itemId);
-      expect(ItemRepository.save).toHaveBeenCalled();
+      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(itemId);
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalled();
       expect(result.itemName).toBe("Updated Item");
       expect(result.price).toBe(100); // Should remain unchanged
     });
@@ -136,17 +136,17 @@ describe("ManageItem", () => {
       existingItem.itemName = "Original Item";
       existingItem.price = 100;
 
-      (ItemRepository.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         existingItem,
       );
-      (ItemRepository.save as jest.Mock).mockImplementation((item) =>
+      (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((item) =>
         Promise.resolve(item),
       );
 
-      const result = await ManageItem.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(updates, itemId);
 
-      expect(ItemRepository.getByIdOrFail).toHaveBeenCalledWith(itemId);
-      expect(ItemRepository.save).toHaveBeenCalled();
+      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(itemId);
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalled();
       expect(result.price).toBe(200);
       expect(result.itemName).toBe("Original Item"); // Should remain unchanged
     });
@@ -163,11 +163,11 @@ describe("ManageItem", () => {
       newItem.itemName = "New Item";
       newItem.price = 150;
 
-      (ItemRepository.save as jest.Mock).mockResolvedValue(newItem);
+      (ITEM_REPOSITORY.save as jest.Mock).mockResolvedValue(newItem);
 
-      const result = await ManageItem.create(itemData);
+      const result = await MANAGE_ITEM.create(itemData);
 
-      expect(ItemRepository.save).toHaveBeenCalled();
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalled();
       expect(result).toBe(newItem);
       expect(result.itemName).toBe("New Item");
       expect(result.price).toBe(150);
@@ -179,14 +179,14 @@ describe("ManageItem", () => {
         price: 150,
       };
 
-      (ItemRepository.save as jest.Mock).mockImplementation((item) =>
+      (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((item) =>
         Promise.resolve(item),
       );
 
-      await ManageItem.create(itemData);
+      await MANAGE_ITEM.create(itemData);
 
-      expect(ItemRepository.save).toHaveBeenCalled();
-      const savedItem = (ItemRepository.save as jest.Mock).mock.calls[0][0];
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalled();
+      const savedItem = (ITEM_REPOSITORY.save as jest.Mock).mock.calls[0][0];
       expect(savedItem.itemName).toBe("New Item");
       expect(savedItem.price).toBe(150);
     });

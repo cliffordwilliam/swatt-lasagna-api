@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import express from "express";
-import itemRouter from "./item/routers";
+import itemRouter from "./item/router";
 import errorHandler from "./middlewares/error-handler";
 import { getORM } from "./core/database/adapter";
 import { ENV } from "./core/config/constants";

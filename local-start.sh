@@ -29,7 +29,7 @@ done
 echo "PostgreSQL is ready!"
 
 echo "Running schema.sql..."
-if docker exec -i postgres psql -U postgres -d swatt_lasagna_api -q < db/migrations/dql/schema.sql; then
+if docker exec -i postgres psql -U postgres -d swatt_lasagna_api -q < db/migrations/sql/schema.sql; then
     echo "Schema migration completed successfully"
 else
     echo "Schema migration failed"
@@ -37,7 +37,7 @@ else
 fi
 
 echo "Running seed.sql..."
-if docker exec -i postgres psql -U postgres -d swatt_lasagna_api -q < db/migrations/dql/seed.sql; then
+if docker exec -i postgres psql -U postgres -d swatt_lasagna_api -q < db/migrations/sql/seed.sql; then
     echo "Seed data loaded successfully"
 else
     echo "Seed data loading failed"

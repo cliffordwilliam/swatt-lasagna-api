@@ -1,31 +1,31 @@
 import { filterDefinedValues } from "../../common/utils/defined-entries";
 import { <ENTITY_CLASS> } from "../entities/<DOMAIN_NAME>.entity";
-import { <ENTITY_CLASS>Repository } from "../repositories/<DOMAIN_NAME>-repository";
+import { <ENTITY_REPOSITORY_CONST> } from "../repositories/<DOMAIN_NAME>-repository";
 import {
   <ENTITY_CLASS>CreateRequest,
   <ENTITY_CLASS>UpdateRequest,
   <ENTITY_CLASS>Filter,
 } from "../schemas/<DOMAIN_NAME>";
 
-export const Manage<ENTITY_CLASS> = {
+export const <MANAGE_ENTITY_CONST> = {
   async list(filters: <ENTITY_CLASS>Filter) {
-    return await <ENTITY_CLASS>Repository.list(filters);
+    return await <ENTITY_REPOSITORY_CONST>.list(filters);
   },
 
   async getById(<DOMAIN_NAME>Id: number) {
-    return await <ENTITY_CLASS>Repository.getByIdOrFail(<DOMAIN_NAME>Id);
+    return await <ENTITY_REPOSITORY_CONST>.getByIdOrFail(<DOMAIN_NAME>Id);
   },
 
   async update(updates: <ENTITY_CLASS>UpdateRequest, <DOMAIN_NAME>Id: number) {
-    const existingEntity = await <ENTITY_CLASS>Repository.getByIdOrFail(<DOMAIN_NAME>Id);
+    const existingEntity = await <ENTITY_REPOSITORY_CONST>.getByIdOrFail(<DOMAIN_NAME>Id);
     Object.assign(existingEntity, filterDefinedValues(updates));
-    return await <ENTITY_CLASS>Repository.save(existingEntity);
+    return await <ENTITY_REPOSITORY_CONST>.save(existingEntity);
   },
 
   async create(<DOMAIN_NAME>Data: <ENTITY_CLASS>CreateRequest) {
     const <DOMAIN_NAME> = new <ENTITY_CLASS>();
     Object.assign(<DOMAIN_NAME>, filterDefinedValues(<DOMAIN_NAME>Data));
-    return await <ENTITY_CLASS>Repository.save(<DOMAIN_NAME>);
+    return await <ENTITY_REPOSITORY_CONST>.save(<DOMAIN_NAME>);
   },
 };
 

@@ -1,30 +1,30 @@
 import { filterDefinedValues } from "../../common/utils/defined-entries";
 import { Item } from "../entities/item.entity";
-import { ItemRepository } from "../repositories/item-repository";
+import { ITEM_REPOSITORY } from "../repositories/item-repository";
 import {
   ItemCreateRequest,
   ItemUpdateRequest,
   ItemFilter,
 } from "../schemas/item";
 
-export const ManageItem = {
+export const MANAGE_ITEM = {
   async list(filters: ItemFilter) {
-    return await ItemRepository.list(filters);
+    return await ITEM_REPOSITORY.list(filters);
   },
 
   async getById(itemId: number) {
-    return await ItemRepository.getByIdOrFail(itemId);
+    return await ITEM_REPOSITORY.getByIdOrFail(itemId);
   },
 
   async update(updates: ItemUpdateRequest, itemId: number) {
-    const existingEntity = await ItemRepository.getByIdOrFail(itemId);
+    const existingEntity = await ITEM_REPOSITORY.getByIdOrFail(itemId);
     Object.assign(existingEntity, filterDefinedValues(updates));
-    return await ItemRepository.save(existingEntity);
+    return await ITEM_REPOSITORY.save(existingEntity);
   },
 
   async create(itemData: ItemCreateRequest) {
     const item = new Item();
     Object.assign(item, filterDefinedValues(itemData));
-    return await ItemRepository.save(item);
+    return await ITEM_REPOSITORY.save(item);
   },
 };

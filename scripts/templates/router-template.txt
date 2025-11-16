@@ -8,13 +8,13 @@ import {
   Create<ENTITY_CLASS>Response,
   Update<ENTITY_CLASS>Response,
 } from "./schemas/<DOMAIN_NAME>";
-import { Manage<ENTITY_CLASS> } from "./services/manage-<DOMAIN_NAME>";
+import { <MANAGE_ENTITY_CONST> } from "./services/manage-<DOMAIN_NAME>";
 import { IntRequest } from "../common/schemas/int-request";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const entities = await Manage<ENTITY_CLASS>.list(<ENTITY_CLASS>Filter.parse(req.query));
+  const entities = await <MANAGE_ENTITY_CONST>.list(<ENTITY_CLASS>Filter.parse(req.query));
   res.json(
     List<ENTITY_CLASS>Response.parse({
       success: true,
@@ -25,17 +25,17 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const entity = await Manage<ENTITY_CLASS>.getById(IntRequest.parse(req.params.id));
+  const entity = await <MANAGE_ENTITY_CONST>.getById(IntRequest.parse(req.params.id));
   res.json(Get<ENTITY_CLASS>Response.parse({ success: true, data: entity }));
 });
 
 router.post("/", async (req, res) => {
-  const entity = await Manage<ENTITY_CLASS>.create(<ENTITY_CLASS>CreateRequest.parse(req.body));
+  const entity = await <MANAGE_ENTITY_CONST>.create(<ENTITY_CLASS>CreateRequest.parse(req.body));
   res.json(Create<ENTITY_CLASS>Response.parse({ success: true, data: entity }));
 });
 
 router.patch("/:id", async (req, res) => {
-  const entity = await Manage<ENTITY_CLASS>.update(
+  const entity = await <MANAGE_ENTITY_CONST>.update(
     <ENTITY_CLASS>UpdateRequest.parse(req.body),
     IntRequest.parse(req.params.id),
   );

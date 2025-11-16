@@ -3,7 +3,7 @@ import { getEM } from "../../core/database/adapter";
 import { <ENTITY_CLASS> } from "../entities/<DOMAIN_NAME>.entity";
 import { <DOMAIN_NAME^>Filter } from "../schemas/<DOMAIN_NAME>";
 
-export const <ENTITY_CLASS>Repository = {
+export const <ENTITY_REPOSITORY_CONST> = {
   async getByIdOrFail(<DOMAIN_NAME>Id: number) {
     const em = await getEM();
     return em.findOneOrFail(<ENTITY_CLASS>, { <DOMAIN_NAME>Id });
