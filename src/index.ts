@@ -8,11 +8,14 @@ import httpLogger from "./middlewares/http-logger";
 import logger from "./core/logging/logger";
 import openApiDocument from "./core/swagger/swagger";
 import swaggerUi from "swagger-ui-express";
+import cors from "cors";
 
 (async () => {
   await getORM();
 
   const app = express();
+
+  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
