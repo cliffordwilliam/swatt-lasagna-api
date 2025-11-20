@@ -3,10 +3,10 @@ import {
   ItemCreateRequest,
   ItemUpdateRequest,
   ItemFilter,
-  CreateItemResponse,
-  UpdateItemResponse,
-  GetItemResponse,
-  ListItemResponse,
+  ItemCreateResponse,
+  ItemUpdateResponse,
+  ItemGetResponse,
+  ItemListResponse,
   ItemSortFieldRequest,
 } from "../../../src/item/schemas/item";
 
@@ -330,7 +330,7 @@ describe("Item Schemas", () => {
     });
   });
 
-  describe("CreateItemResponse", () => {
+  describe("ItemCreateResponse", () => {
     it("should parse valid create response", () => {
       const validResponse = {
         success: true,
@@ -343,7 +343,7 @@ describe("Item Schemas", () => {
         },
       };
 
-      const result = CreateItemResponse.parse(validResponse);
+      const result = ItemCreateResponse.parse(validResponse);
 
       expect(result.success).toBe(true);
       expect(result.data.itemId).toBe(1);
@@ -356,11 +356,11 @@ describe("Item Schemas", () => {
         data: null,
       };
 
-      expect(() => CreateItemResponse.parse(invalidResponse)).toThrow();
+      expect(() => ItemCreateResponse.parse(invalidResponse)).toThrow();
     });
   });
 
-  describe("UpdateItemResponse", () => {
+  describe("ItemUpdateResponse", () => {
     it("should parse valid update response", () => {
       const validResponse = {
         success: true,
@@ -373,7 +373,7 @@ describe("Item Schemas", () => {
         },
       };
 
-      const result = UpdateItemResponse.parse(validResponse);
+      const result = ItemUpdateResponse.parse(validResponse);
 
       expect(result.success).toBe(true);
       expect(result.data.itemId).toBe(1);
@@ -381,7 +381,7 @@ describe("Item Schemas", () => {
     });
   });
 
-  describe("GetItemResponse", () => {
+  describe("ItemGetResponse", () => {
     it("should parse valid get response", () => {
       const validResponse = {
         success: true,
@@ -394,14 +394,14 @@ describe("Item Schemas", () => {
         },
       };
 
-      const result = GetItemResponse.parse(validResponse);
+      const result = ItemGetResponse.parse(validResponse);
 
       expect(result.success).toBe(true);
       expect(result.data.itemId).toBe(1);
     });
   });
 
-  describe("ListItemResponse", () => {
+  describe("ItemListResponse", () => {
     it("should parse valid list response", () => {
       const validResponse = {
         success: true,
@@ -431,7 +431,7 @@ describe("Item Schemas", () => {
         },
       };
 
-      const result = ListItemResponse.parse(validResponse);
+      const result = ItemListResponse.parse(validResponse);
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(2);
@@ -456,7 +456,7 @@ describe("Item Schemas", () => {
         },
       };
 
-      const result = ListItemResponse.parse(validResponse);
+      const result = ItemListResponse.parse(validResponse);
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(0);

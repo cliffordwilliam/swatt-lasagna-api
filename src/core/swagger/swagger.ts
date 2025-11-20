@@ -3,10 +3,10 @@ import { createDocument } from "zod-openapi";
 import {
   ItemCreateRequest,
   ItemUpdateRequest,
-  ListItemResponse,
-  GetItemResponse,
-  CreateItemResponse,
-  UpdateItemResponse,
+  ItemListResponse,
+  ItemGetResponse,
+  ItemCreateResponse,
+  ItemUpdateResponse,
   ItemFilter,
 } from "../../item/schemas/item";
 
@@ -27,7 +27,7 @@ export default createDocument({
           200: {
             description: "List items response",
             content: {
-              "application/json": { schema: ListItemResponse },
+              "application/json": { schema: ItemListResponse },
             },
           },
         },
@@ -43,7 +43,7 @@ export default createDocument({
           200: {
             description: "Item created",
             content: {
-              "application/json": { schema: CreateItemResponse },
+              "application/json": { schema: ItemCreateResponse },
             },
           },
         },
@@ -62,7 +62,7 @@ export default createDocument({
           200: {
             description: "Item details",
             content: {
-              "application/json": { schema: GetItemResponse },
+              "application/json": { schema: ItemGetResponse },
             },
           },
         },
@@ -84,7 +84,7 @@ export default createDocument({
           200: {
             description: "Item updated",
             content: {
-              "application/json": { schema: UpdateItemResponse },
+              "application/json": { schema: ItemUpdateResponse },
             },
           },
         },

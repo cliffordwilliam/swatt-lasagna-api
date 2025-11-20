@@ -71,17 +71,17 @@ export const ItemFilter = z
   .meta({ id: "ItemFilter" });
 export type ItemFilter = z.infer<typeof ItemFilter>;
 
-export const CreateItemResponse = SuccessResponse(Item);
-export type CreateItemResponse = z.infer<typeof CreateItemResponse>;
+export const ItemCreateResponse = SuccessResponse(Item);
+export type ItemCreateResponse = z.infer<typeof ItemCreateResponse>;
 
-export const UpdateItemResponse = SuccessResponse(Item);
-export type UpdateItemResponse = z.infer<typeof UpdateItemResponse>;
+export const ItemUpdateResponse = SuccessResponse(Item);
+export type ItemUpdateResponse = z.infer<typeof ItemUpdateResponse>;
 
-export const GetItemResponse = SuccessResponse(Item);
-export type GetItemResponse = z.infer<typeof GetItemResponse>;
+export const ItemGetResponse = SuccessResponse(Item);
+export type ItemGetResponse = z.infer<typeof ItemGetResponse>;
 
-export const ListItemResponse = SuccessResponse(
+export const ItemListResponse = SuccessResponse(
   z.array(Item),
   PaginationResponse,
 );
-export type ListItemResponse = z.infer<typeof ListItemResponse>;
+export type ItemListResponse = z.infer<typeof ItemListResponse>;
