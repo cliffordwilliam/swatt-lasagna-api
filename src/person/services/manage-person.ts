@@ -48,16 +48,10 @@ export const MANAGE_PERSON = {
 
       await em.flush();
 
-      const personWithRelations = await em.findOneOrFail(
-        Person,
-        { personId: createdPerson.personId },
-        { populate: ["phones", "addresses"] },
-      );
-
       return {
-        ...personWithRelations,
-        phones: Array.from(personWithRelations.phones),
-        addresses: Array.from(personWithRelations.addresses),
+        ...createdPerson,
+        phones: Array.from(createdPerson.phones),
+        addresses: Array.from(createdPerson.addresses),
       };
     });
   },

@@ -123,15 +123,11 @@ describe("MANAGE_PERSON", () => {
       const createdPerson = new Person();
       createdPerson.personId = 1;
       createdPerson.personName = "Test Person";
-
-      const personWithRelations = new Person();
-      personWithRelations.personId = 1;
-      personWithRelations.personName = "Test Person";
-      personWithRelations.phones = [] as any;
-      personWithRelations.addresses = [] as any;
+      // Collections need to be iterable for Array.from()
+      createdPerson.phones = [] as any;
+      createdPerson.addresses = [] as any;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      mockEm.findOneOrFail.mockResolvedValue(personWithRelations);
 
       const result = await MANAGE_PERSON.create(personData);
 
@@ -142,11 +138,7 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.findOneOrFail).toHaveBeenCalledWith(
-        Person,
-        { personId: createdPerson.personId },
-        { populate: ["phones", "addresses"] },
-      );
+      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.personName).toBe("Test Person");
     });
@@ -166,15 +158,22 @@ describe("MANAGE_PERSON", () => {
       mockPhone.phoneNumber = "555-1234";
       mockPhone.preferred = true;
 
-      const personWithRelations = new Person();
-      personWithRelations.personId = 1;
-      personWithRelations.personName = "Test Person";
-      personWithRelations.phones = [mockPhone] as any;
-      personWithRelations.addresses = [] as any;
+      // Create mock collections that are iterable
+      const phonesArray: any = [];
+      createdPerson.phones = phonesArray;
+
+      const addressesArray: any = [];
+      createdPerson.addresses = addressesArray;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockResolvedValue(mockPhone);
-      mockEm.findOneOrFail.mockResolvedValue(personWithRelations);
+      // Simulate MikroORM's automatic collection syncing when phone.person is set
+      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
+        async (em, phone, person) => {
+          phone.person = person;
+          person.phones.push(phone); // Simulate MikroORM's automatic syncing
+          return phone;
+        },
+      );
 
       const result = await MANAGE_PERSON.create(personData);
 
@@ -189,6 +188,7 @@ describe("MANAGE_PERSON", () => {
       );
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
     });
@@ -208,17 +208,22 @@ describe("MANAGE_PERSON", () => {
       mockAddress.address = "123 Test St";
       mockAddress.preferred = true;
 
-      const personWithRelations = new Person();
-      personWithRelations.personId = 1;
-      personWithRelations.personName = "Test Person";
-      personWithRelations.phones = [] as any;
-      personWithRelations.addresses = [mockAddress] as any;
+      // Create mock collections that are iterable
+      const phonesArray: any = [];
+      createdPerson.phones = phonesArray;
+
+      const addressesArray: any = [];
+      createdPerson.addresses = addressesArray;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      (PERSON_ADDRESS_REPOSITORY.save as jest.Mock).mockResolvedValue(
-        mockAddress,
+      // Simulate MikroORM's automatic collection syncing when address.person is set
+      (PERSON_ADDRESS_REPOSITORY.save as jest.Mock).mockImplementation(
+        async (em, address, person) => {
+          address.person = person;
+          person.addresses.push(address); // Simulate MikroORM's automatic syncing
+          return address;
+        },
       );
-      mockEm.findOneOrFail.mockResolvedValue(personWithRelations);
 
       const result = await MANAGE_PERSON.create(personData);
 
@@ -233,6 +238,7 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.addresses).toHaveLength(1);
     });
@@ -258,18 +264,30 @@ describe("MANAGE_PERSON", () => {
       mockAddress.address = "123 Test St";
       mockAddress.preferred = true;
 
-      const personWithRelations = new Person();
-      personWithRelations.personId = 1;
-      personWithRelations.personName = "Test Person";
-      personWithRelations.phones = [mockPhone] as any;
-      personWithRelations.addresses = [mockAddress] as any;
+      // Create mock collections that are iterable
+      const phonesArray: any = [];
+      createdPerson.phones = phonesArray;
+
+      const addressesArray: any = [];
+      createdPerson.addresses = addressesArray;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockResolvedValue(mockPhone);
-      (PERSON_ADDRESS_REPOSITORY.save as jest.Mock).mockResolvedValue(
-        mockAddress,
+      // Simulate MikroORM's automatic collection syncing when phone.person is set
+      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
+        async (em, phone, person) => {
+          phone.person = person;
+          person.phones.push(phone); // Simulate MikroORM's automatic syncing
+          return phone;
+        },
       );
-      mockEm.findOneOrFail.mockResolvedValue(personWithRelations);
+      // Simulate MikroORM's automatic collection syncing when address.person is set
+      (PERSON_ADDRESS_REPOSITORY.save as jest.Mock).mockImplementation(
+        async (em, address, person) => {
+          address.person = person;
+          person.addresses.push(address); // Simulate MikroORM's automatic syncing
+          return address;
+        },
+      );
 
       const result = await MANAGE_PERSON.create(personData);
 
@@ -288,6 +306,7 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
       expect(result.addresses).toHaveLength(1);
