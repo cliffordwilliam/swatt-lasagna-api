@@ -1,17 +1,9 @@
 import { filterDefinedValues } from "../../../src/common/utils/defined-entries";
-import { getEM } from "../../../src/core/database/adapter";
 import { Item } from "../../../src/item/entities/item.entity";
 import { ITEM_REPOSITORY } from "../../../src/item/repositories/item-repository";
-jest.mock("../../../src/core/database/adapter", () => ({
-  getEM: jest.fn(),
-}));
 
 describe("ITEM_REPOSITORY", () => {
-  let mockEm: {
-    persistAndFlush: jest.Mock;
-    findOneOrFail: jest.Mock;
-    findAndCount: jest.Mock;
-  };
+  let mockEm: any;
 
   beforeEach(() => {
     mockEm = {
@@ -19,7 +11,6 @@ describe("ITEM_REPOSITORY", () => {
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
     };
-    (getEM as jest.Mock).mockResolvedValue(mockEm);
   });
 
   describe("save", () => {
@@ -32,7 +23,7 @@ describe("ITEM_REPOSITORY", () => {
       const item = new Item();
       Object.assign(item, filterDefinedValues(itemData));
 
-      const savedItem = await ITEM_REPOSITORY.save(item);
+      const savedItem = await ITEM_REPOSITORY.save(mockEm, item);
 
       expect(mockEm.persistAndFlush).toHaveBeenCalledWith(item);
 
@@ -49,7 +40,7 @@ describe("ITEM_REPOSITORY", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(mockItem);
 
-      const result = await ITEM_REPOSITORY.getByIdOrFail(1);
+      const result = await ITEM_REPOSITORY.getByIdOrFail(mockEm, 1);
 
       expect(mockEm.findOneOrFail).toHaveBeenCalledWith(Item, { itemId: 1 });
       expect(result).toBe(mockItem);
@@ -69,7 +60,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item(), new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 2]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -100,7 +91,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -130,7 +121,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -159,7 +150,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -188,7 +179,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -218,7 +209,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -246,7 +237,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -272,7 +263,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 1]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -298,7 +289,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 12]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(mockEm.findAndCount).toHaveBeenCalledWith(
         Item,
@@ -329,7 +320,7 @@ describe("ITEM_REPOSITORY", () => {
       const mockItems = [new Item()];
       mockEm.findAndCount.mockResolvedValue([mockItems, 12]);
 
-      const result = await ITEM_REPOSITORY.list(filters);
+      const result = await ITEM_REPOSITORY.list(mockEm, filters);
 
       expect(result.pagination.page).toBe(3);
       expect(result.pagination.totalPages).toBe(3);

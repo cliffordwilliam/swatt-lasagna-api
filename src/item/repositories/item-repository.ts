@@ -1,16 +1,14 @@
 import { FilterQuery } from "@mikro-orm/core";
-import { getEM } from "../../core/database/adapter";
 import { Item } from "../entities/item.entity";
 import { ItemFilter } from "../schemas/item";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 export const ITEM_REPOSITORY = {
-  async getByIdOrFail(itemId: number) {
-    const em = await getEM();
+  async getByIdOrFail(em: EntityManager, itemId: number) {
     return em.findOneOrFail(Item, { itemId });
   },
 
-  async list(filters: ItemFilter) {
-    const em = await getEM();
+  async list(em: EntityManager, filters: ItemFilter) {
     const conditions: FilterQuery<Item>[] = [];
 
     if (filters.itemName) {
@@ -56,8 +54,7 @@ export const ITEM_REPOSITORY = {
     };
   },
 
-  async save(item: Item) {
-    const em = await getEM();
+  async save(em: EntityManager, item: Item) {
     await em.persistAndFlush(item);
     return item;
   },
