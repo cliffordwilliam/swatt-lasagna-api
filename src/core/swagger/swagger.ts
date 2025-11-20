@@ -9,6 +9,10 @@ import {
   ItemUpdateResponse,
   ItemFilter,
 } from "../../item/schemas/item";
+import {
+  PersonCreateRequest,
+  PersonCreateResponse,
+} from "../../person/schemas/person";
 
 export default createDocument({
   openapi: "3.1.0",
@@ -85,6 +89,25 @@ export default createDocument({
             description: "Item updated",
             content: {
               "application/json": { schema: ItemUpdateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person": {
+      post: {
+        summary: "Create person",
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonCreateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person created",
+            content: {
+              "application/json": { schema: PersonCreateResponse },
             },
           },
         },

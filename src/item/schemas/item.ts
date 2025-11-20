@@ -28,7 +28,6 @@ export const ItemCreateRequest = z
       .string()
       .min(1, "item name is required")
       .max(100, "item name is too long"),
-
     price: z.coerce
       .number()
       .int()
@@ -45,7 +44,6 @@ export const ItemUpdateRequest = z
       .min(1, "item name is required")
       .max(100, "item name is too long")
       .optional(),
-
     price: z.coerce
       .number()
       .int()

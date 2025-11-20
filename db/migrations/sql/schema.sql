@@ -7,14 +7,38 @@ CREATE TYPE order_status_enum AS ENUM ('Downpayment', 'Belum bayar', 'Lunas');
 CREATE TABLE person (
   person_id SERIAL PRIMARY KEY,
   person_name VARCHAR(255) NOT NULL,
-  address TEXT NOT NULL,
-  phone_number VARCHAR(255) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on phone_number for quick lookup
-CREATE INDEX idx_person_phone_number ON person(phone_number);
+-- Create person_phone table
+CREATE TABLE person_phone (
+  phone_id SERIAL PRIMARY KEY,
+  person_id INTEGER NOT NULL,
+  phone_number VARCHAR(20) NOT NULL,
+  preferred BOOLEAN NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_person_phone_person FOREIGN KEY (person_id) REFERENCES person(person_id)
+);
+
+-- Create indexes on person_phone
+CREATE INDEX idx_person_phone_person_id ON person_phone(person_id);
+CREATE INDEX idx_person_phone_phone_number ON person_phone(phone_number);
+
+-- Create person_address table
+CREATE TABLE person_address (
+  address_id SERIAL PRIMARY KEY,
+  person_id INTEGER NOT NULL,
+  address VARCHAR(500) NOT NULL,
+  preferred BOOLEAN NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_person_address_person FOREIGN KEY (person_id) REFERENCES person(person_id)
+);
+
+-- Create index on person_address
+CREATE INDEX idx_person_address_person_id ON person_address(person_id);
 
 -- Create item table
 CREATE TABLE item (
@@ -46,8 +70,10 @@ CREATE TABLE "order" (
   CONSTRAINT fk_order_recipient FOREIGN KEY (recipient_id) REFERENCES person(person_id)
 );
 
--- Create index on po for quick lookup
+-- Create indexes on order
 CREATE INDEX idx_order_po ON "order"(po);
+CREATE INDEX idx_order_buyer_id ON "order"(buyer_id);
+CREATE INDEX idx_order_recipient_id ON "order"(recipient_id);
 
 -- Create order_item table (junction table)
 CREATE TABLE order_item (

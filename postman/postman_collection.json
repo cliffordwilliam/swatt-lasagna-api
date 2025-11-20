@@ -129,6 +129,62 @@
           }
         }
       ]
+    },
+    {
+      "name": "Person",
+      "item": [
+        {
+          "name": "Create a New Person",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Create a new person\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property(\"personId\");",
+                  "    pm.expect(json.data).to.have.property(\"personName\");",
+                  "    pm.expect(json.data).to.have.property(\"phones\");",
+                  "    pm.expect(json.data).to.have.property(\"addresses\");",
+                  "});",
+                  "",
+                  "if (json.data && json.data.personId) {",
+                  "    pm.environment.set(\"person_id\", json.data.personId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personName\": \"John Doe\",\n  \"phoneNumber\": \"555-1234\",\n  \"address\": \"123 Main Street, City, Country\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person",
+              "host": ["{{base_url}}"],
+              "path": ["person"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
