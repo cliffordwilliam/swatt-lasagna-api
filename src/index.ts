@@ -16,7 +16,7 @@ import cors from "cors";
 
   const app = express();
 
-  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+  app.use(cors({ origin: ENV.CORS_ORIGIN, credentials: true }));
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 

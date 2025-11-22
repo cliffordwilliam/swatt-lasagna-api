@@ -8,6 +8,7 @@ const ENV_SCHEMA = z.object({
   DATABASE_URL: z.string(),
   NODE_ENV: z.string(),
   PORT: z.coerce.number(),
+  CORS_ORIGIN: z.string(),
 });
 
 function getEnv() {
