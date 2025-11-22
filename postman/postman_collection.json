@@ -13,6 +13,17 @@
           "name": "Create a New Item",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const uniqueItemName = `Test Item ${timestamp}`;",
+                  "pm.environment.set(\"item_name\", uniqueItemName);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -41,7 +52,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemName\": \"asd\",\n  \"price\": 123\n}",
+              "raw": "{\n  \"itemName\": \"{{item_name}}\",\n  \"price\": 123\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -59,6 +70,18 @@
         {
           "name": "Update an Item",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const uniqueUpdatedItemName = `Updated Item ${timestamp}`;",
+                  "pm.environment.set(\"updated_item_name\", uniqueUpdatedItemName);",
+                  "pm.environment.set(\"updated_item_price\", 999);"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -85,7 +108,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemName\": \"new\",\n  \"price\": 999\n}",
+              "raw": "{\n  \"itemName\": \"{{updated_item_name}}\",\n  \"price\": {{updated_item_price}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -96,6 +119,38 @@
               "raw": "{{base_url}}/item/{{item_id}}",
               "host": ["{{base_url}}"],
               "path": ["item", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"List items\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.have.property('page');",
+                  "    pm.expect(json.meta).to.have.property('pageSize');",
+                  "    pm.expect(json.meta).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/item",
+              "host": ["{{base_url}}"],
+              "path": ["item"]
             }
           }
         },
@@ -183,6 +238,116 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "List Persons",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"List persons\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.have.property('page');",
+                  "    pm.expect(json.meta).to.have.property('pageSize');",
+                  "    pm.expect(json.meta).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person",
+              "host": ["{{base_url}}"],
+              "path": ["person"]
+            }
+          }
+        },
+        {
+          "name": "Get a Person by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Get a Person by ID\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.personId).to.eql(Number(pm.environment.get(\"person_id\")));",
+                  "    pm.expect(json.data).to.have.property('personName');",
+                  "    pm.expect(json.data).to.have.property('phones');",
+                  "    pm.expect(json.data).to.have.property('addresses');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person/{{person_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person", "{{person_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update a Person",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Person updated successfully\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.personId).to.eql(Number(pm.environment.get(\"person_id\")));",
+                  "    pm.expect(json.data.personName).to.eql(\"Jane Doe Updated\");",
+                  "    pm.expect(json.data).to.have.property('phones');",
+                  "    pm.expect(json.data).to.have.property('addresses');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personName\": \"Jane Doe Updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person/{{person_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person", "{{person_id}}"]
+            }
+          }
         }
       ]
     }

@@ -1,4 +1,4 @@
-import { filterDefinedValues } from "../../../src/common/utils/defined-entries";
+import { assignSafe } from "../../../src/common/utils/assign-safe";
 import { Item } from "../../../src/item/entities/item.entity";
 import { ITEM_REPOSITORY } from "../../../src/item/repositories/item-repository";
 
@@ -21,7 +21,7 @@ describe("ITEM_REPOSITORY", () => {
       };
 
       const item = new Item();
-      Object.assign(item, filterDefinedValues(itemData));
+      assignSafe(itemData, item);
 
       const savedItem = await ITEM_REPOSITORY.save(mockEm, item);
 

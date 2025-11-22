@@ -1,4 +1,4 @@
-import { filterDefinedValues } from "../../common/utils/defined-entries";
+import { assignSafe } from "../../common/utils/assign-safe";
 import withTransaction from "../../common/utils/transactional";
 import { Item } from "../entities/item.entity";
 import { ITEM_REPOSITORY } from "../repositories/item-repository";
@@ -24,7 +24,7 @@ export const MANAGE_ITEM = {
   async update(updates: ItemUpdateRequest, itemId: number) {
     return withTransaction(async (em) => {
       const existingEntity = await ITEM_REPOSITORY.getByIdOrFail(em, itemId);
-      Object.assign(existingEntity, filterDefinedValues(updates));
+      assignSafe(updates, existingEntity);
       return await ITEM_REPOSITORY.save(em, existingEntity);
     });
   },
@@ -32,7 +32,7 @@ export const MANAGE_ITEM = {
   async create(itemData: ItemCreateRequest) {
     return withTransaction(async (em) => {
       const item = new Item();
-      Object.assign(item, filterDefinedValues(itemData));
+      assignSafe(itemData, item);
       return await ITEM_REPOSITORY.save(em, item);
     });
   },

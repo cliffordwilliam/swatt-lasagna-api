@@ -1,11 +1,10 @@
 import { EntityManager } from "@mikro-orm/postgresql";
-import { getORM } from "../../core/database/adapter";
+import { getEM } from "../../core/database/adapter";
 
 export default async function withTransaction<T>(
   fn: (em: EntityManager) => Promise<T>,
 ): Promise<T> {
-  const orm = await getORM();
-  const em = orm.em.fork();
+  const em = await getEM();
   await em.begin();
   try {
     const result = await fn(em);

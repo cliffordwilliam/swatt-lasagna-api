@@ -12,6 +12,11 @@ import {
 import {
   PersonCreateRequest,
   PersonCreateResponse,
+  PersonUpdateRequest,
+  PersonUpdateResponse,
+  PersonFilter,
+  PersonListResponse,
+  PersonGetResponse,
 } from "../../person/schemas/person";
 
 export default createDocument({
@@ -96,6 +101,20 @@ export default createDocument({
     },
 
     "/person": {
+      get: {
+        summary: "List persons",
+        requestParams: {
+          query: PersonFilter,
+        },
+        responses: {
+          200: {
+            description: "List persons response",
+            content: {
+              "application/json": { schema: PersonListResponse },
+            },
+          },
+        },
+      },
       post: {
         summary: "Create person",
         requestBody: {
@@ -108,6 +127,47 @@ export default createDocument({
             description: "Person created",
             content: {
               "application/json": { schema: PersonCreateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person/{id}": {
+      get: {
+        summary: "Get person by ID",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Person ID" }),
+          }),
+        },
+        responses: {
+          200: {
+            description: "Person details",
+            content: {
+              "application/json": { schema: PersonGetResponse },
+            },
+          },
+        },
+      },
+
+      patch: {
+        summary: "Update a person",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Person ID" }),
+          }),
+        },
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonUpdateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person updated",
+            content: {
+              "application/json": { schema: PersonUpdateResponse },
             },
           },
         },
