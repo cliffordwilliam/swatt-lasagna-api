@@ -15,12 +15,9 @@ jest.mock("../../../src/item/repositories/item-repository", () => ({
   },
 }));
 
-const mockEm = {} as any;
-
-jest.mock("../../../src/common/utils/transactional", () => ({
-  __esModule: true,
-  default: jest.fn((fn) => fn(mockEm)),
-}));
+const mockEm = {
+  flush: jest.fn(),
+} as any;
 
 describe("MANAGE_ITEM", () => {
   beforeEach(() => {
@@ -51,7 +48,7 @@ describe("MANAGE_ITEM", () => {
 
       (ITEM_REPOSITORY.list as jest.Mock).mockResolvedValue(mockResult);
 
-      const result = await MANAGE_ITEM.list(filters);
+      const result = await MANAGE_ITEM.list(mockEm, filters);
 
       expect(ITEM_REPOSITORY.list).toHaveBeenCalledWith(mockEm, filters);
       expect(result).toBe(mockResult);
@@ -67,7 +64,7 @@ describe("MANAGE_ITEM", () => {
 
       (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(mockItem);
 
-      const result = await MANAGE_ITEM.getById(1);
+      const result = await MANAGE_ITEM.getById(mockEm, 1);
 
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(result).toBe(mockItem);
@@ -96,8 +93,9 @@ describe("MANAGE_ITEM", () => {
         existingItem,
       );
       (ITEM_REPOSITORY.save as jest.Mock).mockResolvedValue(updatedItem);
+      mockEm.flush.mockResolvedValue(undefined);
 
-      const result = await MANAGE_ITEM.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(mockEm, updates, itemId);
 
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -107,6 +105,7 @@ describe("MANAGE_ITEM", () => {
         mockEm,
         expect.any(Item),
       );
+      expect(mockEm.flush).toHaveBeenCalled();
       expect(result).toBe(updatedItem);
       expect(result.itemName).toBe("Updated Item");
       expect(result.price).toBe(200);
@@ -129,8 +128,9 @@ describe("MANAGE_ITEM", () => {
       (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((em, item) =>
         Promise.resolve(item),
       );
+      mockEm.flush.mockResolvedValue(undefined);
 
-      const result = await MANAGE_ITEM.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(mockEm, updates, itemId);
 
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -140,6 +140,7 @@ describe("MANAGE_ITEM", () => {
         mockEm,
         expect.any(Item),
       );
+      expect(mockEm.flush).toHaveBeenCalled();
       expect(result.itemName).toBe("Updated Item");
       expect(result.price).toBe(100); // Should remain unchanged
     });
@@ -161,8 +162,9 @@ describe("MANAGE_ITEM", () => {
       (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((em, item) =>
         Promise.resolve(item),
       );
+      mockEm.flush.mockResolvedValue(undefined);
 
-      const result = await MANAGE_ITEM.update(updates, itemId);
+      const result = await MANAGE_ITEM.update(mockEm, updates, itemId);
 
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -172,8 +174,40 @@ describe("MANAGE_ITEM", () => {
         mockEm,
         expect.any(Item),
       );
+      expect(mockEm.flush).toHaveBeenCalled();
       expect(result.price).toBe(200);
       expect(result.itemName).toBe("Original Item"); // Should remain unchanged
+    });
+
+    it("should not flush when flush parameter is false", async () => {
+      const itemId = 1;
+      const updates: ItemUpdateRequest = {
+        itemName: "Updated Item",
+      };
+
+      const existingItem = new Item();
+      existingItem.itemId = itemId;
+      existingItem.itemName = "Original Item";
+      existingItem.price = 100;
+
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingItem,
+      );
+      (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((em, item) =>
+        Promise.resolve(item),
+      );
+
+      await MANAGE_ITEM.update(mockEm, updates, itemId, false);
+
+      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
+        mockEm,
+        itemId,
+      );
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalledWith(
+        mockEm,
+        expect.any(Item),
+      );
+      expect(mockEm.flush).not.toHaveBeenCalled();
     });
   });
 
@@ -189,13 +223,15 @@ describe("MANAGE_ITEM", () => {
       newItem.price = 150;
 
       (ITEM_REPOSITORY.save as jest.Mock).mockResolvedValue(newItem);
+      mockEm.flush.mockResolvedValue(undefined);
 
-      const result = await MANAGE_ITEM.create(itemData);
+      const result = await MANAGE_ITEM.create(mockEm, itemData);
 
       expect(ITEM_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
         expect.any(Item),
       );
+      expect(mockEm.flush).toHaveBeenCalled();
       expect(result).toBe(newItem);
       expect(result.itemName).toBe("New Item");
       expect(result.price).toBe(150);
@@ -210,16 +246,37 @@ describe("MANAGE_ITEM", () => {
       (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((em, item) =>
         Promise.resolve(item),
       );
+      mockEm.flush.mockResolvedValue(undefined);
 
-      await MANAGE_ITEM.create(itemData);
+      await MANAGE_ITEM.create(mockEm, itemData);
 
       expect(ITEM_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
         expect.any(Item),
       );
+      expect(mockEm.flush).toHaveBeenCalled();
       const savedItem = (ITEM_REPOSITORY.save as jest.Mock).mock.calls[0][1];
       expect(savedItem.itemName).toBe("New Item");
       expect(savedItem.price).toBe(150);
+    });
+
+    it("should not flush when flush parameter is false", async () => {
+      const itemData: ItemCreateRequest = {
+        itemName: "New Item",
+        price: 150,
+      };
+
+      (ITEM_REPOSITORY.save as jest.Mock).mockImplementation((em, item) =>
+        Promise.resolve(item),
+      );
+
+      await MANAGE_ITEM.create(mockEm, itemData, false);
+
+      expect(ITEM_REPOSITORY.save).toHaveBeenCalledWith(
+        mockEm,
+        expect.any(Item),
+      );
+      expect(mockEm.flush).not.toHaveBeenCalled();
     });
   });
 });

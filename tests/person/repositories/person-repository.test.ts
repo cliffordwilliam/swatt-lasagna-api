@@ -8,7 +8,7 @@ describe("PERSON_REPOSITORY", () => {
 
   beforeEach(() => {
     mockEm = {
-      persistAndFlush: jest.fn(),
+      persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
       populate: jest.fn(),
@@ -22,7 +22,7 @@ describe("PERSON_REPOSITORY", () => {
 
       const savedPerson = await PERSON_REPOSITORY.save(mockEm, person);
 
-      expect(mockEm.persistAndFlush).toHaveBeenCalledWith(person);
+      expect(mockEm.persist).toHaveBeenCalledWith(person);
       expect(savedPerson).toBe(person);
     });
   });

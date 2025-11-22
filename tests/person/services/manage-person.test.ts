@@ -38,17 +38,11 @@ jest.mock(
 );
 
 const mockEm = {
-  persistAndFlush: jest.fn(),
   persist: jest.fn(),
   flush: jest.fn(),
   findOneOrFail: jest.fn(),
   populate: jest.fn(),
 } as any;
-
-jest.mock("../../../src/common/utils/transactional", () => ({
-  __esModule: true,
-  default: jest.fn((fn) => fn(mockEm)),
-}));
 
 describe("MANAGE_PERSON", () => {
   beforeEach(() => {
@@ -135,8 +129,10 @@ describe("MANAGE_PERSON", () => {
       createdPerson.addresses = [] as any;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.create(personData);
+      const result = await MANAGE_PERSON.create(mockEm, personData);
 
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
@@ -145,7 +141,10 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
+        "phones",
+        "addresses",
+      ]);
       expect(result.personId).toBe(1);
       expect(result.personName).toBe("Test Person");
     });
@@ -181,8 +180,10 @@ describe("MANAGE_PERSON", () => {
           return phone;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.create(personData);
+      const result = await MANAGE_PERSON.create(mockEm, personData);
 
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
@@ -195,7 +196,10 @@ describe("MANAGE_PERSON", () => {
       );
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
+        "phones",
+        "addresses",
+      ]);
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
     });
@@ -231,8 +235,10 @@ describe("MANAGE_PERSON", () => {
           return address;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.create(personData);
+      const result = await MANAGE_PERSON.create(mockEm, personData);
 
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
@@ -245,7 +251,10 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
+        "phones",
+        "addresses",
+      ]);
       expect(result.personId).toBe(1);
       expect(result.addresses).toHaveLength(1);
     });
@@ -295,8 +304,10 @@ describe("MANAGE_PERSON", () => {
           return address;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.create(personData);
+      const result = await MANAGE_PERSON.create(mockEm, personData);
 
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
@@ -313,10 +324,48 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.findOneOrFail).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
+        "phones",
+        "addresses",
+      ]);
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
       expect(result.addresses).toHaveLength(1);
+    });
+
+    it("should not flush when flush parameter is false", async () => {
+      const personData: PersonCreateRequest = {
+        personName: "Test Person",
+        phoneNumber: "555-1234",
+      };
+
+      const createdPerson = new Person();
+      createdPerson.personId = 1;
+      createdPerson.personName = "Test Person";
+      const phonesArray: any = [];
+      createdPerson.phones = phonesArray;
+      const addressesArray: any = [];
+      createdPerson.addresses = addressesArray;
+
+      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
+      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
+        async (em, phone, person) => {
+          phone.person = person;
+          person.phones.push(phone);
+          return phone;
+        },
+      );
+      mockEm.populate.mockResolvedValue(undefined);
+
+      await MANAGE_PERSON.create(mockEm, personData, false);
+
+      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
+        mockEm,
+        expect.any(Person),
+      );
+      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalled();
+      expect(mockEm.flush).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalled();
     });
   });
 
@@ -350,7 +399,7 @@ describe("MANAGE_PERSON", () => {
 
       (PERSON_REPOSITORY.list as jest.Mock).mockResolvedValue(mockResult);
 
-      const result = await MANAGE_PERSON.list(filters);
+      const result = await MANAGE_PERSON.list(mockEm, filters);
 
       expect(PERSON_REPOSITORY.list).toHaveBeenCalledWith(mockEm, filters);
       expect(result).toBe(mockResult);
@@ -373,7 +422,7 @@ describe("MANAGE_PERSON", () => {
       );
       mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.getById(personId);
+      const result = await MANAGE_PERSON.getById(mockEm, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -409,8 +458,10 @@ describe("MANAGE_PERSON", () => {
       (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         existingPerson,
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -418,6 +469,10 @@ describe("MANAGE_PERSON", () => {
       );
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(result.personName).toBe("Updated Person");
@@ -451,8 +506,10 @@ describe("MANAGE_PERSON", () => {
           return phone;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -467,6 +524,10 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
     });
 
     it("should update a person and update an existing phone", async () => {
@@ -501,8 +562,10 @@ describe("MANAGE_PERSON", () => {
       (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockResolvedValue(
         existingPhone,
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -520,6 +583,10 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
     });
 
     it("should update a person and create a new address", async () => {
@@ -550,8 +617,10 @@ describe("MANAGE_PERSON", () => {
           return address;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -566,6 +635,10 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
     });
 
     it("should update a person and update an existing address", async () => {
@@ -600,8 +673,10 @@ describe("MANAGE_PERSON", () => {
       (PERSON_ADDRESS_REPOSITORY.save as jest.Mock).mockResolvedValue(
         existingAddress,
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -619,6 +694,10 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
     });
 
     it("should update a person with both phone and address", async () => {
@@ -660,8 +739,10 @@ describe("MANAGE_PERSON", () => {
           return address;
         },
       );
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
 
-      const result = await MANAGE_PERSON.update(updates, personId);
+      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
         mockEm,
@@ -671,6 +752,40 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_ADDRESS_REPOSITORY.save).toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
       expect(mockEm.flush).toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
+        "phones",
+        "addresses",
+      ]);
+    });
+
+    it("should not flush when flush parameter is false", async () => {
+      const personId = 1;
+      const updates: PersonUpdateRequest = {
+        personName: "Updated Person",
+      };
+
+      const existingPerson = new Person();
+      existingPerson.personId = personId;
+      existingPerson.personName = "Original Person";
+      const phonesArray: any = [];
+      const addressesArray: any = [];
+      existingPerson.phones = phonesArray;
+      existingPerson.addresses = addressesArray;
+
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingPerson,
+      );
+      mockEm.populate.mockResolvedValue(undefined);
+
+      await MANAGE_PERSON.update(mockEm, updates, personId, false);
+
+      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
+        mockEm,
+        personId,
+      );
+      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
+      expect(mockEm.flush).not.toHaveBeenCalled();
+      expect(mockEm.populate).toHaveBeenCalled();
     });
   });
 });

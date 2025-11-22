@@ -10,6 +10,7 @@ export default function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ) {
+  console.log(err);
   if (err instanceof ZodError) {
     res.status(422).json(
       ErrorResponse.parse({

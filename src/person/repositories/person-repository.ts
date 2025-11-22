@@ -55,7 +55,7 @@ export const PERSON_REPOSITORY = {
   },
 
   async save(em: EntityManager, person: Person) {
-    await em.persistAndFlush(person);
+    em.persist(person);
     return person;
   },
 };

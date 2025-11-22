@@ -55,7 +55,7 @@ export const ITEM_REPOSITORY = {
   },
 
   async save(em: EntityManager, item: Item) {
-    await em.persistAndFlush(item);
+    em.persist(item);
     return item;
   },
 };

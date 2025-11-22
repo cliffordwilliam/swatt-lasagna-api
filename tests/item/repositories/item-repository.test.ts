@@ -7,7 +7,7 @@ describe("ITEM_REPOSITORY", () => {
 
   beforeEach(() => {
     mockEm = {
-      persistAndFlush: jest.fn(),
+      persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
     };
@@ -25,7 +25,7 @@ describe("ITEM_REPOSITORY", () => {
 
       const savedItem = await ITEM_REPOSITORY.save(mockEm, item);
 
-      expect(mockEm.persistAndFlush).toHaveBeenCalledWith(item);
+      expect(mockEm.persist).toHaveBeenCalledWith(item);
 
       expect(savedItem).toBe(item);
     });
