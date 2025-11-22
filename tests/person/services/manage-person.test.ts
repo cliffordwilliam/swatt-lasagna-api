@@ -130,7 +130,6 @@ describe("MANAGE_PERSON", () => {
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
       mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON.create(mockEm, personData);
 
@@ -141,10 +140,7 @@ describe("MANAGE_PERSON", () => {
       expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "addresses",
-      ]);
+      expect(mockEm.populate).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.personName).toBe("Test Person");
     });
@@ -181,7 +177,6 @@ describe("MANAGE_PERSON", () => {
         },
       );
       mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON.create(mockEm, personData);
 
@@ -196,10 +191,7 @@ describe("MANAGE_PERSON", () => {
       );
       expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "addresses",
-      ]);
+      expect(mockEm.populate).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
     });
@@ -236,7 +228,6 @@ describe("MANAGE_PERSON", () => {
         },
       );
       mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON.create(mockEm, personData);
 
@@ -251,10 +242,7 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "addresses",
-      ]);
+      expect(mockEm.populate).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.addresses).toHaveLength(1);
     });
@@ -305,7 +293,6 @@ describe("MANAGE_PERSON", () => {
         },
       );
       mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON.create(mockEm, personData);
 
@@ -324,10 +311,7 @@ describe("MANAGE_PERSON", () => {
         createdPerson,
       );
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "addresses",
-      ]);
+      expect(mockEm.populate).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
       expect(result.phones).toHaveLength(1);
       expect(result.addresses).toHaveLength(1);
@@ -355,7 +339,6 @@ describe("MANAGE_PERSON", () => {
           return phone;
         },
       );
-      mockEm.populate.mockResolvedValue(undefined);
 
       await MANAGE_PERSON.create(mockEm, personData, false);
 
@@ -365,7 +348,7 @@ describe("MANAGE_PERSON", () => {
       );
       expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalled();
       expect(mockEm.flush).not.toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalled();
+      expect(mockEm.populate).not.toHaveBeenCalled();
     });
   });
 

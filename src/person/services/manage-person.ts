@@ -71,8 +71,6 @@ export const MANAGE_PERSON = {
       await em.flush();
     }
 
-    await em.populate(createdPerson, ["phones", "addresses"]);
-
     return {
       ...createdPerson,
       phones: Array.from(createdPerson.phones),
