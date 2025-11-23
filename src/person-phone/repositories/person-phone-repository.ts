@@ -65,15 +65,15 @@ export const PERSON_PHONE_REPOSITORY = {
 
   async save(em: EntityManager, phone: PersonPhone, person: Person) {
     if (phone.preferred) {
-      await em.nativeUpdate(
-        PersonPhone,
-        {
-          person: { personId: person.personId },
-          preferred: true,
-          ...(phone.phoneId && { phoneId: { $ne: phone.phoneId } }),
-        },
-        { preferred: false },
-      );
+      const existingPreferred = await em.find(PersonPhone, {
+        person: { personId: person.personId },
+        preferred: true,
+        ...(phone.phoneId && { phoneId: { $ne: phone.phoneId } }),
+      });
+
+      existingPreferred.forEach((ph) => {
+        ph.preferred = false;
+      });
     }
 
     em.persist(phone);

@@ -69,15 +69,15 @@ export const PERSON_ADDRESS_REPOSITORY = {
 
   async save(em: EntityManager, address: PersonAddress, person: Person) {
     if (address.preferred) {
-      await em.nativeUpdate(
-        PersonAddress,
-        {
-          person: { personId: person.personId },
-          preferred: true,
-          ...(address.addressId && { addressId: { $ne: address.addressId } }),
-        },
-        { preferred: false },
-      );
+      const existingPreferred = await em.find(PersonAddress, {
+        person: { personId: person.personId },
+        preferred: true,
+        ...(address.addressId && { addressId: { $ne: address.addressId } }),
+      });
+
+      existingPreferred.forEach((addr) => {
+        addr.preferred = false;
+      });
     }
 
     em.persist(address);

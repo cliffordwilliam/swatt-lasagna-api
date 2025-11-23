@@ -211,9 +211,14 @@ export const MANAGE_ORDER = {
       orderItems: orderItemData,
     } = this.dtoToEntities(orderData);
 
+    const itemIds = orderItemData.map(({ itemId }) => itemId);
+    const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
+    const itemMap = new Map(items.map((item) => [item.itemId, item]));
+
     let totalPurchase = 0;
     for (const { itemId, orderItem } of orderItemData) {
-      const item = await ITEM_REPOSITORY.getByIdOrFail(em, itemId);
+      const item = itemMap.get(itemId);
+      if (!item) throw new Error(`Item ${itemId} not found`);
       totalPurchase += item.price * orderItem.quantity;
     }
 
@@ -279,7 +284,8 @@ export const MANAGE_ORDER = {
     const createdOrder = await ORDER_REPOSITORY.save(em, order);
 
     for (const { orderItem, itemId } of orderItemData) {
-      const item = await ITEM_REPOSITORY.getByIdOrFail(em, itemId);
+      const item = itemMap.get(itemId);
+      if (!item) throw new Error(`Item ${itemId} not found`);
       orderItem.order = createdOrder;
       orderItem.item = item;
       em.persist(orderItem);
@@ -355,20 +361,20 @@ export const MANAGE_ORDER = {
         em.remove(orderItem);
       }
 
+      const itemIds = orderItemValues.map(({ itemId }) => itemId);
+      const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
+      const itemMap = new Map(items.map((item) => [item.itemId, item]));
+
       let totalPurchase = 0;
       for (const orderItemValue of orderItemValues) {
-        const item = await ITEM_REPOSITORY.getByIdOrFail(
-          em,
-          orderItemValue.itemId,
-        );
+        const item = itemMap.get(orderItemValue.itemId);
+        if (!item) throw new Error(`Item ${orderItemValue.itemId} not found`);
         totalPurchase += item.price * orderItemValue.quantity;
       }
 
       for (const orderItemValue of orderItemValues) {
-        const item = await ITEM_REPOSITORY.getByIdOrFail(
-          em,
-          orderItemValue.itemId,
-        );
+        const item = itemMap.get(orderItemValue.itemId);
+        if (!item) throw new Error(`Item ${orderItemValue.itemId} not found`);
 
         const orderItem = new OrderItem();
         orderItem.order = existingOrder;

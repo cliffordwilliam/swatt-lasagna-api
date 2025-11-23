@@ -8,6 +8,13 @@ export const ITEM_REPOSITORY = {
     return em.findOneOrFail(Item, { itemId });
   },
 
+  async getByIds(em: EntityManager, itemIds: number[]) {
+    if (itemIds.length === 0) {
+      return [];
+    }
+    return em.find(Item, { itemId: { $in: itemIds } });
+  },
+
   async list(em: EntityManager, filters: ItemFilter) {
     const conditions: FilterQuery<Item>[] = [];
 
