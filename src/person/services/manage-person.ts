@@ -11,7 +11,8 @@ import { PersonPhone } from "../../person-phone/entities/person-phone.entity";
 import { PersonAddress } from "../../person-address/entities/person-address.entity";
 import { PERSON_PHONE_REPOSITORY } from "../../person-phone/repositories/person-phone-repository";
 import { PERSON_ADDRESS_REPOSITORY } from "../../person-address/repositories/person-address-repository";
-import { InvalidRequestParameterException } from "../../api/models/error";
+import { MANAGE_PERSON_PHONE } from "../../person-phone/services/manage-person-phone";
+import { MANAGE_PERSON_ADDRESS } from "../../person-address/services/manage-person-address";
 
 export const MANAGE_PERSON = {
   async list(em: EntityManager, filters: PersonFilter) {
@@ -20,11 +21,22 @@ export const MANAGE_PERSON = {
 
   async getById(em: EntityManager, personId: number) {
     const person = await PERSON_REPOSITORY.getByIdOrFail(em, personId);
-    await em.populate(person, ["phones", "addresses"]);
+    await em.populate(person, [
+      "phones",
+      "phones.person",
+      "addresses",
+      "addresses.person",
+    ]);
     return {
       ...person,
-      phones: Array.from(person.phones),
-      addresses: Array.from(person.addresses),
+      phones: Array.from(person.phones).map((phone) => ({
+        ...phone,
+        personId: phone.person.personId,
+      })),
+      addresses: Array.from(person.addresses).map((address) => ({
+        ...address,
+        personId: address.person.personId,
+      })),
     };
   },
 
@@ -73,10 +85,23 @@ export const MANAGE_PERSON = {
       await em.flush();
     }
 
+    await em.populate(createdPerson, [
+      "phones",
+      "phones.person",
+      "addresses",
+      "addresses.person",
+    ]);
+
     return {
       ...createdPerson,
-      phones: Array.from(createdPerson.phones),
-      addresses: Array.from(createdPerson.addresses),
+      phones: Array.from(createdPerson.phones).map((phone) => ({
+        ...phone,
+        personId: phone.person.personId,
+      })),
+      addresses: Array.from(createdPerson.addresses).map((address) => ({
+        ...address,
+        personId: address.person.personId,
+      })),
     };
   },
 
@@ -91,47 +116,37 @@ export const MANAGE_PERSON = {
     assignSafe(updates, existingPerson);
 
     if (updates.phone !== undefined) {
-      if (updates.phone.preferred === false) {
-        throw new InvalidRequestParameterException(
-          "Cannot set preferred to false. You can only toggle preferred from false to true.",
-        );
-      }
-
-      let phone: PersonPhone;
       const { phoneId, ...phoneData } = updates.phone;
       if (phoneId !== undefined) {
-        phone = await em.findOneOrFail(PersonPhone, {
+        await MANAGE_PERSON_PHONE.update(
+          em,
           phoneId,
-          person: { personId },
-        });
-        assignSafe(phoneData, phone);
+          phoneData,
+          personId,
+          false,
+        );
       } else {
-        phone = new PersonPhone();
-        assignSafe(phoneData, phone);
+        await MANAGE_PERSON_PHONE.create(em, { personId, ...phoneData }, false);
       }
-      await PERSON_PHONE_REPOSITORY.save(em, phone, existingPerson);
     }
 
     if (updates.address !== undefined) {
-      if (updates.address.preferred === false) {
-        throw new InvalidRequestParameterException(
-          "Cannot set preferred to false. You can only toggle preferred from false to true.",
-        );
-      }
-
-      let address: PersonAddress;
       const { addressId, ...addressData } = updates.address;
       if (addressId !== undefined) {
-        address = await em.findOneOrFail(PersonAddress, {
+        await MANAGE_PERSON_ADDRESS.update(
+          em,
           addressId,
-          person: { personId },
-        });
-        assignSafe(addressData, address);
+          addressData,
+          personId,
+          false,
+        );
       } else {
-        address = new PersonAddress();
-        assignSafe(addressData, address);
+        await MANAGE_PERSON_ADDRESS.create(
+          em,
+          { personId, ...addressData },
+          false,
+        );
       }
-      await PERSON_ADDRESS_REPOSITORY.save(em, address, existingPerson);
     }
 
     em.persist(existingPerson);
@@ -140,12 +155,23 @@ export const MANAGE_PERSON = {
       await em.flush();
     }
 
-    await em.populate(existingPerson, ["phones", "addresses"]);
+    await em.populate(existingPerson, [
+      "phones",
+      "phones.person",
+      "addresses",
+      "addresses.person",
+    ]);
 
     return {
       ...existingPerson,
-      phones: Array.from(existingPerson.phones),
-      addresses: Array.from(existingPerson.addresses),
+      phones: Array.from(existingPerson.phones).map((phone) => ({
+        ...phone,
+        personId: phone.person.personId,
+      })),
+      addresses: Array.from(existingPerson.addresses).map((address) => ({
+        ...address,
+        personId: address.person.personId,
+      })),
     };
   },
 };

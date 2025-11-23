@@ -432,6 +432,468 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "List Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"List orders\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.have.property('page');",
+                  "    pm.expect(json.meta).to.have.property('pageSize');",
+                  "    pm.expect(json.meta).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/order",
+              "host": ["{{base_url}}"],
+              "path": ["order"]
+            }
+          }
+        },
+        {
+          "name": "Get an Order by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Get an Order by ID\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.orderId).to.eql(Number(pm.environment.get(\"order_id\")));",
+                  "    pm.expect(json.data).to.have.property('po');",
+                  "    pm.expect(json.data).to.have.property('buyerId');",
+                  "    pm.expect(json.data).to.have.property('recipientId');",
+                  "    pm.expect(json.data).to.have.property('orderItems');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/order/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["order", "{{order_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update an Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const uniqueUpdatedPO = `PO-UPDATED-${timestamp}`;",
+                  "pm.environment.set(\"updated_order_po\", uniqueUpdatedPO);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Order updated successfully\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.orderId).to.eql(Number(pm.environment.get(\"order_id\")));",
+                  "    pm.expect(json.data.po).to.eql(pm.environment.get(\"updated_order_po\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po\": \"{{updated_order_po}}\",\n  \"note\": \"Updated note\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["order", "{{order_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Person Phone",
+      "item": [
+        {
+          "name": "Create a New Person Phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Create a new person phone\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property(\"phoneId\");",
+                  "    pm.expect(json.data).to.have.property(\"personId\");",
+                  "    pm.expect(json.data).to.have.property(\"phoneNumber\");",
+                  "    pm.expect(json.data).to.have.property(\"preferred\");",
+                  "});",
+                  "",
+                  "if (json.data && json.data.phoneId) {",
+                  "    pm.environment.set(\"person_phone_id\", json.data.phoneId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personId\": {{person_id}},\n  \"phoneNumber\": \"555-9999\",\n  \"preferred\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person-phone",
+              "host": ["{{base_url}}"],
+              "path": ["person-phone"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Person Phones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"List person phones\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.have.property('page');",
+                  "    pm.expect(json.meta).to.have.property('pageSize');",
+                  "    pm.expect(json.meta).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person-phone",
+              "host": ["{{base_url}}"],
+              "path": ["person-phone"]
+            }
+          }
+        },
+        {
+          "name": "Get a Person Phone by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Get a Person Phone by ID\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.phoneId).to.eql(Number(pm.environment.get(\"person_phone_id\")));",
+                  "    pm.expect(json.data).to.have.property('phoneNumber');",
+                  "    pm.expect(json.data).to.have.property('personId');",
+                  "    pm.expect(json.data).to.have.property('preferred');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person-phone/{{person_phone_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person-phone", "{{person_phone_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update a Person Phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Person Phone updated successfully\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.phoneId).to.eql(Number(pm.environment.get(\"person_phone_id\")));",
+                  "    pm.expect(json.data.phoneNumber).to.eql(\"555-8888\");",
+                  "    pm.expect(json.data.preferred).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"555-8888\",\n  \"preferred\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person-phone/{{person_phone_id}}?personId={{person_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person-phone", "{{person_phone_id}}"],
+              "query": [
+                {
+                  "key": "personId",
+                  "value": "{{person_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Person Address",
+      "item": [
+        {
+          "name": "Create a New Person Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Create a new person address\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property(\"addressId\");",
+                  "    pm.expect(json.data).to.have.property(\"personId\");",
+                  "    pm.expect(json.data).to.have.property(\"address\");",
+                  "    pm.expect(json.data).to.have.property(\"preferred\");",
+                  "});",
+                  "",
+                  "if (json.data && json.data.addressId) {",
+                  "    pm.environment.set(\"person_address_id\", json.data.addressId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personId\": {{person_id}},\n  \"address\": \"789 New Street, City, Country\",\n  \"preferred\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person-address",
+              "host": ["{{base_url}}"],
+              "path": ["person-address"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Person Addresses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"List person addresses\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.have.property('page');",
+                  "    pm.expect(json.meta).to.have.property('pageSize');",
+                  "    pm.expect(json.meta).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person-address",
+              "host": ["{{base_url}}"],
+              "path": ["person-address"]
+            }
+          }
+        },
+        {
+          "name": "Get a Person Address by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Get a Person Address by ID\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.addressId).to.eql(Number(pm.environment.get(\"person_address_id\")));",
+                  "    pm.expect(json.data).to.have.property('address');",
+                  "    pm.expect(json.data).to.have.property('personId');",
+                  "    pm.expect(json.data).to.have.property('preferred');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/person-address/{{person_address_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person-address", "{{person_address_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update a Person Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Person Address updated successfully\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.addressId).to.eql(Number(pm.environment.get(\"person_address_id\")));",
+                  "    pm.expect(json.data.address).to.eql(\"999 Updated Avenue, City, Country\");",
+                  "    pm.expect(json.data.preferred).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"999 Updated Avenue, City, Country\",\n  \"preferred\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/person-address/{{person_address_id}}?personId={{person_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["person-address", "{{person_address_id}}"],
+              "query": [
+                {
+                  "key": "personId",
+                  "value": "{{person_id}}"
+                }
+              ]
+            }
+          }
         }
       ]
     }

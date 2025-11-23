@@ -78,7 +78,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 10,
           offset: 0,
           orderBy: { personName: "asc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.data).toHaveLength(2);
@@ -118,7 +123,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 10,
           offset: 0,
           orderBy: { personName: "asc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.data).toHaveLength(1);
@@ -154,7 +164,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 10,
           offset: 0,
           orderBy: { personName: "asc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.data).toHaveLength(1);
@@ -187,7 +202,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 10,
           offset: 0,
           orderBy: { personName: "desc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.data).toHaveLength(1);
@@ -220,7 +240,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 5,
           offset: 5,
           orderBy: { personName: "asc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.pagination.page).toBe(2);
@@ -243,10 +268,16 @@ describe("PERSON_REPOSITORY", () => {
       const mockPhone = new PersonPhone();
       mockPhone.phoneId = 1;
       mockPhone.phoneNumber = "555-1234";
+      const mockPhonePerson = new Person();
+      mockPhonePerson.personId = 1;
+      mockPhone.person = mockPhonePerson;
 
       const mockAddress = new PersonAddress();
       mockAddress.addressId = 1;
       mockAddress.address = "123 Test St";
+      const mockAddressPerson = new Person();
+      mockAddressPerson.personId = 1;
+      mockAddress.person = mockAddressPerson;
 
       const mockPerson = new Person();
       mockPerson.personId = 1;
@@ -265,6 +296,10 @@ describe("PERSON_REPOSITORY", () => {
       expect(result.data[0]).toHaveProperty("addresses");
       expect(Array.isArray(result.data[0].phones)).toBe(true);
       expect(Array.isArray(result.data[0].addresses)).toBe(true);
+      expect(result.data[0].phones[0]).toHaveProperty("personId");
+      expect(result.data[0].addresses[0]).toHaveProperty("personId");
+      expect(result.data[0].phones[0].personId).toBe(1);
+      expect(result.data[0].addresses[0].personId).toBe(1);
     });
 
     it("should default to personName when sortField is invalid", async () => {
@@ -294,7 +329,12 @@ describe("PERSON_REPOSITORY", () => {
           limit: 10,
           offset: 0,
           orderBy: { personName: "asc" },
-          populate: ["phones", "addresses"],
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
         },
       );
       expect(result.data).toHaveLength(1);

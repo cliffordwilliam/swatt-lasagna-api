@@ -22,7 +22,29 @@ import {
   OrderCreateRequest,
   OrderCreateResponse,
   OrderGetResponse,
+  OrderUpdateRequest,
+  OrderUpdateResponse,
+  OrderFilter,
+  OrderListResponse,
 } from "../../order/schemas/order";
+import {
+  PersonPhoneCreateRequest,
+  PersonPhoneCreateResponse,
+  PersonPhoneUpdateRequest,
+  PersonPhoneUpdateResponse,
+  PersonPhoneFilter,
+  PersonPhoneListResponse,
+  PersonPhoneGetResponse,
+} from "../../person-phone/schemas/person-phone";
+import {
+  PersonAddressCreateRequest,
+  PersonAddressCreateResponse,
+  PersonAddressUpdateRequest,
+  PersonAddressUpdateResponse,
+  PersonAddressFilter,
+  PersonAddressListResponse,
+  PersonAddressGetResponse,
+} from "../../person-address/schemas/person-address";
 
 export default createDocument({
   openapi: "3.1.0",
@@ -180,6 +202,20 @@ export default createDocument({
     },
 
     "/order": {
+      get: {
+        summary: "List orders",
+        requestParams: {
+          query: OrderFilter,
+        },
+        responses: {
+          200: {
+            description: "List orders response",
+            content: {
+              "application/json": { schema: OrderListResponse },
+            },
+          },
+        },
+      },
       post: {
         summary: "Create order",
         requestBody: {
@@ -211,6 +247,179 @@ export default createDocument({
             description: "Order details",
             content: {
               "application/json": { schema: OrderGetResponse },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: "Update an order",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Order ID" }),
+          }),
+        },
+        requestBody: {
+          content: {
+            "application/json": { schema: OrderUpdateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Order updated",
+            content: {
+              "application/json": { schema: OrderUpdateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person-phone": {
+      get: {
+        summary: "List person phones",
+        requestParams: {
+          query: PersonPhoneFilter,
+        },
+        responses: {
+          200: {
+            description: "List person phones response",
+            content: {
+              "application/json": { schema: PersonPhoneListResponse },
+            },
+          },
+        },
+      },
+      post: {
+        summary: "Create person phone",
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonPhoneCreateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person phone created",
+            content: {
+              "application/json": { schema: PersonPhoneCreateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person-phone/{id}": {
+      get: {
+        summary: "Get person phone by ID",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Phone ID" }),
+          }),
+        },
+        responses: {
+          200: {
+            description: "Person phone details",
+            content: {
+              "application/json": { schema: PersonPhoneGetResponse },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: "Update a person phone",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Phone ID" }),
+          }),
+          query: z.object({
+            personId: z.number().meta({ description: "Person ID" }),
+          }),
+        },
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonPhoneUpdateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person phone updated",
+            content: {
+              "application/json": { schema: PersonPhoneUpdateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person-address": {
+      get: {
+        summary: "List person addresses",
+        requestParams: {
+          query: PersonAddressFilter,
+        },
+        responses: {
+          200: {
+            description: "List person addresses response",
+            content: {
+              "application/json": { schema: PersonAddressListResponse },
+            },
+          },
+        },
+      },
+      post: {
+        summary: "Create person address",
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonAddressCreateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person address created",
+            content: {
+              "application/json": { schema: PersonAddressCreateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/person-address/{id}": {
+      get: {
+        summary: "Get person address by ID",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Address ID" }),
+          }),
+        },
+        responses: {
+          200: {
+            description: "Person address details",
+            content: {
+              "application/json": { schema: PersonAddressGetResponse },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: "Update a person address",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Address ID" }),
+          }),
+          query: z.object({
+            personId: z.number().meta({ description: "Person ID" }),
+          }),
+        },
+        requestBody: {
+          content: {
+            "application/json": { schema: PersonAddressUpdateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Person address updated",
+            content: {
+              "application/json": { schema: PersonAddressUpdateResponse },
             },
           },
         },

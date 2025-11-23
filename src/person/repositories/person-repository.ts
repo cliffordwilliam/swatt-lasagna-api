@@ -32,7 +32,7 @@ export const PERSON_REPOSITORY = {
       limit: filters.pageSize,
       offset: (filters.page - 1) * filters.pageSize,
       orderBy: { [sortField]: filters.sortOrder },
-      populate: ["phones", "addresses"],
+      populate: ["phones", "phones.person", "addresses", "addresses.person"],
     });
 
     const totalPages = Math.ceil(totalCount / filters.pageSize);
@@ -40,8 +40,14 @@ export const PERSON_REPOSITORY = {
     return {
       data: entities.map((entity) => ({
         ...entity,
-        phones: Array.from(entity.phones),
-        addresses: Array.from(entity.addresses),
+        phones: Array.from(entity.phones).map((phone) => ({
+          ...phone,
+          personId: phone.person.personId,
+        })),
+        addresses: Array.from(entity.addresses).map((address) => ({
+          ...address,
+          personId: address.person.personId,
+        })),
       })),
       pagination: {
         page: filters.page,

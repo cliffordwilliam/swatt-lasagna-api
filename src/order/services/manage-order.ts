@@ -1,5 +1,10 @@
 import { EntityManager } from "@mikro-orm/postgresql";
-import { OrderCreateRequest, PersonUpsertRequest } from "../schemas/order";
+import {
+  OrderCreateRequest,
+  OrderUpdateRequest,
+  OrderFilter,
+  PersonUpsertRequest,
+} from "../schemas/order";
 import { Order } from "../entities/order.entity";
 import { ORDER_REPOSITORY } from "../repositories/order-repository";
 import { assignSafe } from "../../common/utils/assign-safe";
@@ -14,6 +19,10 @@ import {
 } from "../../person/schemas/person";
 
 export const MANAGE_ORDER = {
+  async list(em: EntityManager, filters: OrderFilter) {
+    return await ORDER_REPOSITORY.list(em, filters);
+  },
+
   async getById(em: EntityManager, orderId: number) {
     const order = await ORDER_REPOSITORY.getByIdOrFail(em, orderId);
     await em.populate(order, [
@@ -81,7 +90,7 @@ export const MANAGE_ORDER = {
       const createdPersonData = await MANAGE_PERSON.create(
         em,
         createRequest,
-        true,
+        true, // Always flush person creation to get ID
       );
 
       return await PERSON_REPOSITORY.getByIdOrFail(
@@ -150,6 +159,113 @@ export const MANAGE_ORDER = {
       orderItems: orderItemsCollection,
       ...orderRest
     } = createdOrder;
+
+    return {
+      ...orderRest,
+      buyerId: buyerEntity.personId,
+      recipientId: recipientEntity.personId,
+      orderItems: Array.from(orderItemsCollection).map((oi) => ({
+        itemId: oi.item.itemId,
+        quantity: oi.quantity,
+      })),
+    };
+  },
+
+  async update(
+    em: EntityManager,
+    orderId: number,
+    updates: OrderUpdateRequest,
+    flush = true,
+  ) {
+    const existingOrder = await ORDER_REPOSITORY.getByIdOrFail(em, orderId);
+    await em.populate(existingOrder, [
+      "buyer",
+      "recipient",
+      "orderItems",
+      "orderItems.item",
+    ]);
+
+    const {
+      buyer: buyerValue,
+      recipient: recipientValue,
+      items: orderItemValues,
+      ...orderDataRest
+    } = updates;
+
+    if (buyerValue !== undefined) {
+      const newBuyer = await this.createPersonFromUpsert(em, buyerValue);
+      existingOrder.buyer = newBuyer;
+    }
+
+    if (recipientValue !== undefined) {
+      const newRecipient = await this.createPersonFromUpsert(
+        em,
+        recipientValue,
+      );
+      existingOrder.recipient = newRecipient;
+    }
+
+    if (orderItemValues !== undefined) {
+      const existingOrderItems = Array.from(existingOrder.orderItems);
+      for (const orderItem of existingOrderItems) {
+        em.remove(orderItem);
+      }
+
+      let totalPurchase = 0;
+      for (const orderItemValue of orderItemValues) {
+        const item = await ITEM_REPOSITORY.getByIdOrFail(
+          em,
+          orderItemValue.itemId,
+        );
+        totalPurchase += item.price * orderItemValue.quantity;
+      }
+
+      for (const orderItemValue of orderItemValues) {
+        const item = await ITEM_REPOSITORY.getByIdOrFail(
+          em,
+          orderItemValue.itemId,
+        );
+
+        const orderItem = new OrderItem();
+        orderItem.order = existingOrder;
+        orderItem.item = item;
+        orderItem.quantity = orderItemValue.quantity;
+
+        em.persist(orderItem);
+      }
+
+      existingOrder.totalPurchase = totalPurchase;
+    }
+
+    assignSafe(orderDataRest, existingOrder);
+
+    if (
+      orderDataRest.shippingCost !== undefined ||
+      orderItemValues !== undefined
+    ) {
+      existingOrder.grandTotal =
+        existingOrder.totalPurchase + existingOrder.shippingCost;
+    }
+
+    await ORDER_REPOSITORY.save(em, existingOrder);
+
+    if (flush) {
+      await em.flush();
+    }
+
+    await em.populate(existingOrder, [
+      "buyer",
+      "recipient",
+      "orderItems",
+      "orderItems.item",
+    ]);
+
+    const {
+      buyer: buyerEntity,
+      recipient: recipientEntity,
+      orderItems: orderItemsCollection,
+      ...orderRest
+    } = existingOrder;
 
     return {
       ...orderRest,
