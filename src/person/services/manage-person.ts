@@ -47,37 +47,42 @@ export const MANAGE_PERSON = {
   } {
     const { phoneNumber, address: addressValue, ...personData } = dto;
 
+    let phone: PersonPhone | null = null;
+    let address: PersonAddress | null = null;
+
     const person = new Person();
     assignSafe(personData, person);
 
-    let phone: PersonPhone | null = null;
     if (phoneNumber) {
       phone = new PersonPhone();
-      assignSafe({ phoneNumber, preferred: true }, phone);
+      phone.phoneNumber = phoneNumber;
+      phone.preferred = true;
     }
 
-    let address: PersonAddress | null = null;
     if (addressValue) {
       address = new PersonAddress();
-      assignSafe({ address: addressValue, preferred: true }, address);
+      address.address = addressValue;
+      address.preferred = true;
     }
 
     return { person, phone, address };
   },
 
-  async create(
+  async createPersonEntity(
     em: EntityManager,
     personData: PersonCreateRequest,
     flush = true,
-  ) {
+  ): Promise<Person> {
     const { person, phone, address } = this.dtoToEntities(personData);
 
     const createdPerson = await PERSON_REPOSITORY.save(em, person);
 
     if (phone) {
+      phone.person = createdPerson;
       await PERSON_PHONE_REPOSITORY.save(em, phone, createdPerson);
     }
     if (address) {
+      address.person = createdPerson;
       await PERSON_ADDRESS_REPOSITORY.save(em, address, createdPerson);
     }
 
@@ -92,6 +97,16 @@ export const MANAGE_PERSON = {
       "addresses.person",
     ]);
 
+    return createdPerson;
+  },
+
+  async create(
+    em: EntityManager,
+    personData: PersonCreateRequest,
+    flush = true,
+  ) {
+    const createdPerson = await this.createPersonEntity(em, personData, flush);
+
     return {
       ...createdPerson,
       phones: Array.from(createdPerson.phones).map((phone) => ({
@@ -105,12 +120,12 @@ export const MANAGE_PERSON = {
     };
   },
 
-  async update(
+  async updatePersonEntity(
     em: EntityManager,
     updates: PersonUpdateRequest,
     personId: number,
     flush = true,
-  ) {
+  ): Promise<Person> {
     const existingPerson = await PERSON_REPOSITORY.getByIdOrFail(em, personId);
 
     assignSafe(updates, existingPerson);
@@ -161,6 +176,22 @@ export const MANAGE_PERSON = {
       "addresses",
       "addresses.person",
     ]);
+
+    return existingPerson;
+  },
+
+  async update(
+    em: EntityManager,
+    updates: PersonUpdateRequest,
+    personId: number,
+    flush = true,
+  ) {
+    const existingPerson = await this.updatePersonEntity(
+      em,
+      updates,
+      personId,
+      flush,
+    );
 
     return {
       ...existingPerson,

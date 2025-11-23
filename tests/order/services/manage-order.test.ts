@@ -29,6 +29,7 @@ jest.mock("../../../src/order/repositories/order-repository", () => ({
 jest.mock("../../../src/person/repositories/person-repository", () => ({
   PERSON_REPOSITORY: {
     getByIdOrFail: jest.fn(),
+    save: jest.fn(),
   },
 }));
 
@@ -36,6 +37,8 @@ jest.mock("../../../src/person/services/manage-person", () => ({
   MANAGE_PERSON: {
     create: jest.fn(),
     update: jest.fn(),
+    createPersonEntity: jest.fn(),
+    updatePersonEntity: jest.fn(),
   },
 }));
 
@@ -50,6 +53,7 @@ const mockEm = {
   populate: jest.fn(),
   persist: jest.fn(),
   remove: jest.fn(),
+  nativeUpdate: jest.fn(),
 } as any;
 
 describe("MANAGE_ORDER", () => {
@@ -204,10 +208,7 @@ describe("MANAGE_ORDER", () => {
       createdOrder.grandTotal = 3400;
       createdOrder.orderItems = [orderItem1, orderItem2] as any;
 
-      (MANAGE_PERSON.create as jest.Mock)
-        .mockResolvedValueOnce({ personId: 1 })
-        .mockResolvedValueOnce({ personId: 2 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock)
+      (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
       (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
@@ -222,14 +223,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.create(mockEm, orderData);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledTimes(2);
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledTimes(2);
+      // Called once for buyer person, once for recipient person
+      expect(PERSON_REPOSITORY.save).toHaveBeenCalledTimes(2);
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledTimes(4);
       expect(ORDER_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
         expect.any(Order),
       );
-      expect(mockEm.persist).toHaveBeenCalledTimes(2);
+      // Called for: buyer phone (1), recipient address (1), order items (2) = 4 total
+      expect(mockEm.persist).toHaveBeenCalledTimes(4);
       expect(mockEm.flush).toHaveBeenCalled();
       expect(result.orderId).toBe(1);
       expect(result.buyerId).toBe(1);
@@ -275,10 +277,7 @@ describe("MANAGE_ORDER", () => {
       createdOrder.recipient = mockRecipient;
       createdOrder.orderItems = [] as any;
 
-      (MANAGE_PERSON.create as jest.Mock)
-        .mockResolvedValueOnce({ personId: 1 })
-        .mockResolvedValueOnce({ personId: 2 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock)
+      (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
       (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
@@ -291,6 +290,167 @@ describe("MANAGE_ORDER", () => {
       await MANAGE_ORDER.create(mockEm, orderData, false);
 
       expect(mockEm.flush).not.toHaveBeenCalled();
+    });
+
+    it("should create order with buyer having address but no phone", async () => {
+      const orderData: OrderCreateRequest = {
+        po: "PO-002",
+        buyer: {
+          personName: "Buyer",
+          address: {
+            address: "123 Test St",
+            preferred: true,
+          },
+        },
+        recipient: {
+          personName: "Recipient",
+        },
+        orderDate: new Date("2024-01-01"),
+        deliveryDate: new Date("2024-01-02"),
+        pickupDelivery: PickupDelivery.Pickup,
+        shippingCost: 1000,
+        payment: Payment.Tunai,
+        orderStatus: OrderStatus.BelumBayar,
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      const createdOrder = new Order();
+      createdOrder.orderId = 1;
+      createdOrder.buyer = mockBuyer;
+      createdOrder.recipient = mockRecipient;
+      createdOrder.orderItems = [] as any;
+
+      (PERSON_REPOSITORY.save as jest.Mock)
+        .mockResolvedValueOnce(mockBuyer)
+        .mockResolvedValueOnce(mockRecipient);
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
+        .mockResolvedValueOnce(item1)
+        .mockResolvedValueOnce(item1);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
+
+      await MANAGE_ORDER.create(mockEm, orderData);
+
+      expect(PERSON_REPOSITORY.save).toHaveBeenCalledTimes(2);
+      // buyer address (1) + order item (1) = 2
+      expect(mockEm.persist).toHaveBeenCalledTimes(2);
+    });
+
+    it("should create order with recipient having phone but no address", async () => {
+      const orderData: OrderCreateRequest = {
+        po: "PO-003",
+        buyer: {
+          personName: "Buyer",
+        },
+        recipient: {
+          personName: "Recipient",
+          phone: {
+            phoneNumber: "555-5678",
+            preferred: true,
+          },
+        },
+        orderDate: new Date("2024-01-01"),
+        deliveryDate: new Date("2024-01-02"),
+        pickupDelivery: PickupDelivery.Pickup,
+        shippingCost: 1000,
+        payment: Payment.Tunai,
+        orderStatus: OrderStatus.BelumBayar,
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      const createdOrder = new Order();
+      createdOrder.orderId = 1;
+      createdOrder.buyer = mockBuyer;
+      createdOrder.recipient = mockRecipient;
+      createdOrder.orderItems = [] as any;
+
+      (PERSON_REPOSITORY.save as jest.Mock)
+        .mockResolvedValueOnce(mockBuyer)
+        .mockResolvedValueOnce(mockRecipient);
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
+        .mockResolvedValueOnce(item1)
+        .mockResolvedValueOnce(item1);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
+
+      await MANAGE_ORDER.create(mockEm, orderData);
+
+      expect(PERSON_REPOSITORY.save).toHaveBeenCalledTimes(2);
+      // recipient phone (1) + order item (1) = 2
+      expect(mockEm.persist).toHaveBeenCalledTimes(2);
+    });
+
+    it("should create order with existing buyer and recipient (personId provided)", async () => {
+      const orderData: OrderCreateRequest = {
+        po: "PO-004",
+        buyer: {
+          personId: 1,
+          personName: "Existing Buyer",
+        },
+        recipient: {
+          personId: 2,
+          personName: "Existing Recipient",
+        },
+        orderDate: new Date("2024-01-01"),
+        deliveryDate: new Date("2024-01-02"),
+        pickupDelivery: PickupDelivery.Pickup,
+        shippingCost: 1000,
+        payment: Payment.Tunai,
+        orderStatus: OrderStatus.BelumBayar,
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      const createdOrder = new Order();
+      createdOrder.orderId = 1;
+      createdOrder.buyer = mockBuyer;
+      createdOrder.recipient = mockRecipient;
+      createdOrder.orderItems = [] as any;
+
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock)
+        .mockResolvedValueOnce(mockBuyer)
+        .mockResolvedValueOnce(mockRecipient);
+      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
+        .mockResolvedValueOnce(item1)
+        .mockResolvedValueOnce(item1);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.flush.mockResolvedValue(undefined);
+      mockEm.populate.mockResolvedValue(undefined);
+
+      await MANAGE_ORDER.create(mockEm, orderData);
+
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledTimes(2);
+      expect(PERSON_REPOSITORY.save).not.toHaveBeenCalled();
+      // order item (1) = 1
+      expect(mockEm.persist).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -376,8 +536,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -385,7 +544,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Buyer",
@@ -398,7 +557,6 @@ describe("MANAGE_ORDER", () => {
         1,
         false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(result.buyerId).toBe(1);
     });
 
@@ -436,8 +594,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -445,7 +602,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Buyer",
@@ -453,7 +610,7 @@ describe("MANAGE_ORDER", () => {
         1,
         false,
       );
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.not.objectContaining({
           phone: expect.anything(),
@@ -462,7 +619,6 @@ describe("MANAGE_ORDER", () => {
         1,
         false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(result.buyerId).toBe(1);
     });
 
@@ -504,8 +660,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -513,7 +668,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Buyer",
@@ -526,7 +681,6 @@ describe("MANAGE_ORDER", () => {
         1,
         false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(result.buyerId).toBe(1);
     });
 
@@ -574,8 +728,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -583,7 +736,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Buyer",
@@ -601,7 +754,6 @@ describe("MANAGE_ORDER", () => {
         1,
         false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(result.buyerId).toBe(1);
     });
 
@@ -642,8 +794,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.create as jest.Mock).mockResolvedValue({ personId: 3 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -651,16 +802,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
         mockEm,
         {
           personName: "New Buyer",
           phoneNumber: "555-1111",
           address: undefined,
         },
-        true, // Always flush person creation to get ID
+        false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 3);
       expect(result.buyerId).toBe(3);
     });
 
@@ -697,8 +847,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.create as jest.Mock).mockResolvedValue({ personId: 3 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -706,16 +855,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
         mockEm,
         {
           personName: "New Buyer",
           phoneNumber: undefined,
           address: undefined,
         },
-        true, // Always flush person creation to get ID
+        false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 3);
       expect(result.buyerId).toBe(3);
     });
 
@@ -756,8 +904,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.create as jest.Mock).mockResolvedValue({ personId: 3 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -765,16 +912,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
         mockEm,
         {
           personName: "New Buyer",
           phoneNumber: undefined,
           address: "456 New St",
         },
-        true, // Always flush person creation to get ID
+        false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 3);
       expect(result.buyerId).toBe(3);
     });
 
@@ -819,8 +965,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.create as jest.Mock).mockResolvedValue({ personId: 3 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
         newBuyer,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -828,16 +973,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
         mockEm,
         {
           personName: "New Buyer",
           phoneNumber: "555-1111",
           address: "456 New St",
         },
-        true, // Always flush person creation to get ID
+        false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 3);
       expect(result.buyerId).toBe(3);
     });
 
@@ -879,8 +1023,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newRecipient,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -888,7 +1031,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Recipient",
@@ -938,8 +1081,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newRecipient,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -947,7 +1089,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Recipient",
@@ -955,7 +1097,7 @@ describe("MANAGE_ORDER", () => {
         2,
         false,
       );
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.not.objectContaining({
           phone: expect.anything(),
@@ -1011,8 +1153,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.update as jest.Mock).mockResolvedValue(undefined);
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
         newRecipient,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -1020,7 +1161,7 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.update).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
         mockEm,
         expect.objectContaining({
           personName: "Updated Recipient",
@@ -1078,8 +1219,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (MANAGE_PERSON.create as jest.Mock).mockResolvedValue({ personId: 4 });
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
         newRecipient,
       );
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
@@ -1087,16 +1227,15 @@ describe("MANAGE_ORDER", () => {
 
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
-      expect(MANAGE_PERSON.create).toHaveBeenCalledWith(
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
         mockEm,
         {
           personName: "New Recipient",
           phoneNumber: "555-2222",
           address: undefined,
         },
-        true, // Always flush person creation to get ID
+        false,
       );
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 4);
       expect(result.recipientId).toBe(4);
     });
 
@@ -1155,7 +1294,9 @@ describe("MANAGE_ORDER", () => {
       expect(mockEm.remove).toHaveBeenCalledWith(oldOrderItem);
       expect(mockEm.persist).toHaveBeenCalledTimes(2);
       expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledTimes(4);
+      // Calculation: item1 (3 * 100) + item2 (2 * 200) = 300 + 400 = 700
       expect(result.totalPurchase).toBe(700);
+      // grandTotal = totalPurchase (700) + shippingCost (3000) = 3700
       expect(result.grandTotal).toBe(3700);
     });
 
@@ -1264,8 +1405,83 @@ describe("MANAGE_ORDER", () => {
       const result = await MANAGE_ORDER.update(mockEm, orderId, updates);
 
       expect(result.note).toBe("Updated note");
-      expect(MANAGE_PERSON.update).not.toHaveBeenCalled();
-      expect(MANAGE_PERSON.create).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON.updatePersonEntity).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON.createPersonEntity).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getPersonFromUpsert", () => {
+    it("should call updatePersonEntity with default flush=true when personId is provided", async () => {
+      const personUpsert = {
+        personId: 1,
+        personName: "Test Person",
+        phone: {
+          phoneNumber: "555-1234",
+          preferred: true,
+        },
+      };
+
+      const mockPerson = new Person();
+      mockPerson.personId = 1;
+      mockPerson.personName = "Test Person";
+
+      (MANAGE_PERSON.updatePersonEntity as jest.Mock).mockResolvedValue(
+        mockPerson,
+      );
+
+      const result = await MANAGE_ORDER.getPersonFromUpsert(
+        mockEm,
+        personUpsert,
+      );
+
+      expect(MANAGE_PERSON.updatePersonEntity).toHaveBeenCalledWith(
+        mockEm,
+        expect.objectContaining({
+          personName: "Test Person",
+          phone: {
+            phoneId: undefined,
+            phoneNumber: "555-1234",
+            preferred: true,
+          },
+        }),
+        1,
+        true, // default flush = true
+      );
+      expect(result).toBe(mockPerson);
+    });
+
+    it("should call createPersonEntity with default flush=true when personId is not provided", async () => {
+      const personUpsert = {
+        personName: "New Person",
+        phone: {
+          phoneNumber: "555-5678",
+          preferred: true,
+        },
+      };
+
+      const mockPerson = new Person();
+      mockPerson.personId = 2;
+      mockPerson.personName = "New Person";
+
+      (MANAGE_PERSON.createPersonEntity as jest.Mock).mockResolvedValue(
+        mockPerson,
+      );
+
+      const result = await MANAGE_ORDER.getPersonFromUpsert(
+        mockEm,
+        personUpsert,
+      );
+
+      expect(MANAGE_PERSON.createPersonEntity).toHaveBeenCalledWith(
+        mockEm,
+        {
+          personName: "New Person",
+          phoneNumber: "555-5678",
+          address: undefined,
+        },
+        true, // default flush = true
+      );
+      expect(result).toBe(mockPerson);
     });
   });
 });

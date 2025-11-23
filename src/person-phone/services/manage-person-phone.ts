@@ -34,10 +34,9 @@ export const MANAGE_PERSON_PHONE = {
     );
 
     const phone = new PersonPhone();
-    assignSafe(
-      { phoneNumber: phoneData.phoneNumber, preferred: phoneData.preferred },
-      phone,
-    );
+    phone.phoneNumber = phoneData.phoneNumber;
+    phone.preferred = phoneData.preferred;
+    phone.person = person;
 
     await PERSON_PHONE_REPOSITORY.save(em, phone, person);
 

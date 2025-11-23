@@ -76,7 +76,6 @@ export const PERSON_PHONE_REPOSITORY = {
       );
     }
 
-    phone.person = person;
     em.persist(phone);
 
     return phone;

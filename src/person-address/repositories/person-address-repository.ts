@@ -80,7 +80,6 @@ export const PERSON_ADDRESS_REPOSITORY = {
       );
     }
 
-    address.person = person;
     em.persist(address);
 
     return address;

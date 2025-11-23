@@ -37,10 +37,9 @@ export const MANAGE_PERSON_ADDRESS = {
     );
 
     const address = new PersonAddress();
-    assignSafe(
-      { address: addressData.address, preferred: addressData.preferred },
-      address,
-    );
+    address.address = addressData.address;
+    address.preferred = addressData.preferred;
+    address.person = person;
 
     await PERSON_ADDRESS_REPOSITORY.save(em, address, person);
 

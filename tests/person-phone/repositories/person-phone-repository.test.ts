@@ -25,6 +25,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
       const phone = new PersonPhone();
       phone.phoneNumber = "555-1234";
       phone.preferred = false;
+      phone.person = mockPerson;
 
       const result = await PERSON_PHONE_REPOSITORY.save(
         mockEm,
@@ -42,6 +43,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
       const phone = new PersonPhone();
       phone.phoneNumber = "555-1234";
       phone.preferred = true;
+      phone.person = mockPerson;
 
       mockEm.nativeUpdate.mockResolvedValue(undefined);
 

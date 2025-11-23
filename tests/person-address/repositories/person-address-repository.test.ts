@@ -25,6 +25,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
       const address = new PersonAddress();
       address.address = "123 Test St";
       address.preferred = false;
+      address.person = mockPerson;
 
       const result = await PERSON_ADDRESS_REPOSITORY.save(
         mockEm,
@@ -42,6 +43,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
       const address = new PersonAddress();
       address.address = "123 Test St";
       address.preferred = true;
+      address.person = mockPerson;
 
       mockEm.nativeUpdate.mockResolvedValue(undefined);
 
