@@ -17,6 +17,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
       persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
+      find: jest.fn(),
     };
   });
 
@@ -45,7 +46,12 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
       address.preferred = true;
       address.person = mockPerson;
 
-      mockEm.nativeUpdate.mockResolvedValue(undefined);
+      const existingPreferred = new PersonAddress();
+      existingPreferred.addressId = 1;
+      existingPreferred.preferred = true;
+      existingPreferred.person = mockPerson;
+
+      mockEm.find.mockResolvedValue([existingPreferred]);
 
       const result = await PERSON_ADDRESS_REPOSITORY.save(
         mockEm,
@@ -53,14 +59,11 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
         mockPerson,
       );
 
-      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        PersonAddress,
-        {
-          person: { personId: mockPerson.personId },
-          preferred: true,
-        },
-        { preferred: false },
-      );
+      expect(mockEm.find).toHaveBeenCalledWith(PersonAddress, {
+        person: { personId: mockPerson.personId },
+        preferred: true,
+      });
+      expect(existingPreferred.preferred).toBe(false);
       expect(address.person).toBe(mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(address);
       expect(result).toBe(address);
@@ -72,19 +75,21 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
       address.address = "123 Test St";
       address.preferred = true;
 
-      mockEm.nativeUpdate.mockResolvedValue(undefined);
+      const existingPreferred = new PersonAddress();
+      existingPreferred.addressId = 1;
+      existingPreferred.preferred = true;
+      existingPreferred.person = mockPerson;
+
+      mockEm.find.mockResolvedValue([existingPreferred]);
 
       await PERSON_ADDRESS_REPOSITORY.save(mockEm, address, mockPerson);
 
-      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        PersonAddress,
-        {
-          person: { personId: mockPerson.personId },
-          preferred: true,
-          addressId: { $ne: address.addressId },
-        },
-        { preferred: false },
-      );
+      expect(mockEm.find).toHaveBeenCalledWith(PersonAddress, {
+        person: { personId: mockPerson.personId },
+        preferred: true,
+        addressId: { $ne: address.addressId },
+      });
+      expect(existingPreferred.preferred).toBe(false);
     });
   });
 

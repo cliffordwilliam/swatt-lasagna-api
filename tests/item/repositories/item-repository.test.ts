@@ -10,6 +10,7 @@ describe("ITEM_REPOSITORY", () => {
       persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
+      find: jest.fn(),
     };
   });
 
@@ -44,6 +45,47 @@ describe("ITEM_REPOSITORY", () => {
 
       expect(mockEm.findOneOrFail).toHaveBeenCalledWith(Item, { itemId: 1 });
       expect(result).toBe(mockItem);
+    });
+  });
+
+  describe("getByIds", () => {
+    it("should successfully get items by ids", async () => {
+      const mockItem1 = new Item();
+      mockItem1.itemId = 1;
+      mockItem1.itemName = "Test Item 1";
+      mockItem1.price = 100;
+
+      const mockItem2 = new Item();
+      mockItem2.itemId = 2;
+      mockItem2.itemName = "Test Item 2";
+      mockItem2.price = 200;
+
+      mockEm.find.mockResolvedValue([mockItem1, mockItem2]);
+
+      const result = await ITEM_REPOSITORY.getByIds(mockEm, [1, 2]);
+
+      expect(mockEm.find).toHaveBeenCalledWith(Item, {
+        itemId: { $in: [1, 2] },
+      });
+      expect(result).toEqual([mockItem1, mockItem2]);
+    });
+
+    it("should return empty array when itemIds is empty", async () => {
+      const result = await ITEM_REPOSITORY.getByIds(mockEm, []);
+
+      expect(mockEm.find).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it("should return empty array when no items found", async () => {
+      mockEm.find.mockResolvedValue([]);
+
+      const result = await ITEM_REPOSITORY.getByIds(mockEm, [1, 2]);
+
+      expect(mockEm.find).toHaveBeenCalledWith(Item, {
+        itemId: { $in: [1, 2] },
+      });
+      expect(result).toEqual([]);
     });
   });
 

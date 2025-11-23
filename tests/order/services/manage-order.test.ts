@@ -45,6 +45,7 @@ jest.mock("../../../src/person/services/manage-person", () => ({
 jest.mock("../../../src/item/repositories/item-repository", () => ({
   ITEM_REPOSITORY: {
     getByIdOrFail: jest.fn(),
+    getByIds: jest.fn(),
   },
 }));
 
@@ -54,6 +55,7 @@ const mockEm = {
   persist: jest.fn(),
   remove: jest.fn(),
   nativeUpdate: jest.fn(),
+  find: jest.fn(),
 } as any;
 
 describe("MANAGE_ORDER", () => {
@@ -211,21 +213,18 @@ describe("MANAGE_ORDER", () => {
       (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item2)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item2);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1, item2]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
       mockEm.populate.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
 
       const result = await MANAGE_ORDER.create(mockEm, orderData);
 
       // Called once for buyer person, once for recipient person
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledTimes(2);
-      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledTimes(4);
+      expect(ITEM_REPOSITORY.getByIds).toHaveBeenCalledWith(mockEm, [1, 2]);
       expect(ORDER_REPOSITORY.save).toHaveBeenCalledWith(
         mockEm,
         expect.any(Order),
@@ -280,12 +279,11 @@ describe("MANAGE_ORDER", () => {
       (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item1);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.populate.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
 
       await MANAGE_ORDER.create(mockEm, orderData, false);
 
@@ -331,13 +329,12 @@ describe("MANAGE_ORDER", () => {
       (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item1);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
       mockEm.populate.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
 
       await MANAGE_ORDER.create(mockEm, orderData);
 
@@ -385,13 +382,12 @@ describe("MANAGE_ORDER", () => {
       (PERSON_REPOSITORY.save as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item1);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
       mockEm.populate.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
 
       await MANAGE_ORDER.create(mockEm, orderData);
 
@@ -437,13 +433,12 @@ describe("MANAGE_ORDER", () => {
       (MANAGE_PERSON.updatePersonEntity as jest.Mock)
         .mockResolvedValueOnce(mockBuyer)
         .mockResolvedValueOnce(mockRecipient);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item1);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
       mockEm.populate.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
 
       await MANAGE_ORDER.create(mockEm, orderData);
 
@@ -451,6 +446,101 @@ describe("MANAGE_ORDER", () => {
       expect(PERSON_REPOSITORY.save).not.toHaveBeenCalled();
       // order item (1) = 1
       expect(mockEm.persist).toHaveBeenCalledTimes(1);
+    });
+
+    it("should throw error when item is not found during totalPurchase calculation", async () => {
+      const orderData: OrderCreateRequest = {
+        po: "PO-001",
+        buyer: {
+          personName: "Buyer",
+        },
+        recipient: {
+          personName: "Recipient",
+        },
+        orderDate: new Date("2024-01-01"),
+        deliveryDate: new Date("2024-01-02"),
+        pickupDelivery: PickupDelivery.Pickup,
+        shippingCost: 3000,
+        payment: Payment.Tunai,
+        orderStatus: OrderStatus.BelumBayar,
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+
+      (PERSON_REPOSITORY.save as jest.Mock)
+        .mockResolvedValueOnce(mockBuyer)
+        .mockResolvedValueOnce(mockRecipient);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([]);
+
+      await expect(MANAGE_ORDER.create(mockEm, orderData)).rejects.toThrow(
+        "Item 1 not found",
+      );
+    });
+
+    it("should throw error when item is not found during orderItem creation", async () => {
+      const orderData: OrderCreateRequest = {
+        po: "PO-001",
+        buyer: {
+          personName: "Buyer",
+        },
+        recipient: {
+          personName: "Recipient",
+        },
+        orderDate: new Date("2024-01-01"),
+        deliveryDate: new Date("2024-01-02"),
+        pickupDelivery: PickupDelivery.Pickup,
+        shippingCost: 3000,
+        payment: Payment.Tunai,
+        orderStatus: OrderStatus.BelumBayar,
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      const createdOrder = new Order();
+      createdOrder.orderId = 1;
+      createdOrder.buyer = mockBuyer;
+      createdOrder.recipient = mockRecipient;
+      createdOrder.orderItems = [] as any;
+
+      (PERSON_REPOSITORY.save as jest.Mock)
+        .mockResolvedValueOnce(mockBuyer)
+        .mockResolvedValueOnce(mockRecipient);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(createdOrder);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.find.mockResolvedValue([]);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
+
+      // Spy on Map.prototype.get to make it return undefined on the second call
+      // This tests the defensive check at line 288
+      const originalGet = Map.prototype.get;
+      const mapGetSpy = jest.spyOn(Map.prototype, "get");
+      let callCount = 0;
+      mapGetSpy.mockImplementation(function (this: Map<any, any>, key: any) {
+        callCount++;
+        // First call (in totalPurchase loop) returns item, second call (in orderItem loop) returns undefined
+        if (callCount === 1) {
+          return originalGet.call(this, key);
+        }
+        return undefined;
+      });
+
+      await expect(MANAGE_ORDER.create(mockEm, orderData)).rejects.toThrow(
+        "Item 1 not found",
+      );
+
+      mapGetSpy.mockRestore();
     });
   });
 
@@ -1281,11 +1371,7 @@ describe("MANAGE_ORDER", () => {
         existingOrder,
       );
       mockEm.populate.mockResolvedValue(undefined);
-      (ITEM_REPOSITORY.getByIdOrFail as jest.Mock)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item2)
-        .mockResolvedValueOnce(item1)
-        .mockResolvedValueOnce(item2);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1, item2]);
       (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
       mockEm.flush.mockResolvedValue(undefined);
 
@@ -1293,7 +1379,7 @@ describe("MANAGE_ORDER", () => {
 
       expect(mockEm.remove).toHaveBeenCalledWith(oldOrderItem);
       expect(mockEm.persist).toHaveBeenCalledTimes(2);
-      expect(ITEM_REPOSITORY.getByIdOrFail).toHaveBeenCalledTimes(4);
+      expect(ITEM_REPOSITORY.getByIds).toHaveBeenCalledWith(mockEm, [1, 2]);
       // Calculation: item1 (3 * 100) + item2 (2 * 200) = 300 + 400 = 700
       expect(result.totalPurchase).toBe(700);
       // grandTotal = totalPurchase (700) + shippingCost (3000) = 3700
@@ -1407,6 +1493,143 @@ describe("MANAGE_ORDER", () => {
       expect(result.note).toBe("Updated note");
       expect(MANAGE_PERSON.updatePersonEntity).not.toHaveBeenCalled();
       expect(MANAGE_PERSON.createPersonEntity).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when item is not found during totalPurchase calculation in update", async () => {
+      const orderId = 1;
+      const updates: OrderUpdateRequest = {
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const existingOrder = new Order();
+      existingOrder.orderId = orderId;
+      existingOrder.po = "PO-001";
+      existingOrder.shippingCost = 3000;
+      existingOrder.totalPurchase = 10000;
+      existingOrder.grandTotal = 13000;
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      existingOrder.buyer = mockBuyer;
+
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      existingOrder.recipient = mockRecipient;
+
+      existingOrder.orderItems = [] as any;
+
+      (ORDER_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingOrder,
+      );
+      mockEm.populate.mockResolvedValue(undefined);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([]);
+
+      await expect(
+        MANAGE_ORDER.update(mockEm, orderId, updates),
+      ).rejects.toThrow("Item 1 not found");
+    });
+
+    it("should throw error when item is not found during orderItem creation in update", async () => {
+      const orderId = 1;
+      const updates: OrderUpdateRequest = {
+        items: [
+          { itemId: 1, quantity: 1 },
+          { itemId: 2, quantity: 1 },
+        ],
+      };
+
+      const existingOrder = new Order();
+      existingOrder.orderId = orderId;
+      existingOrder.po = "PO-001";
+      existingOrder.shippingCost = 3000;
+      existingOrder.totalPurchase = 10000;
+      existingOrder.grandTotal = 13000;
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      existingOrder.buyer = mockBuyer;
+
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      existingOrder.recipient = mockRecipient;
+
+      existingOrder.orderItems = [] as any;
+
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      (ORDER_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingOrder,
+      );
+      mockEm.populate.mockResolvedValue(undefined);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
+      mockEm.remove.mockResolvedValue(undefined);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.flush.mockResolvedValue(undefined);
+
+      await expect(
+        MANAGE_ORDER.update(mockEm, orderId, updates),
+      ).rejects.toThrow("Item 2 not found");
+    });
+
+    it("should throw error when item is not found during orderItem creation in update", async () => {
+      const orderId = 1;
+      const updates: OrderUpdateRequest = {
+        items: [{ itemId: 1, quantity: 1 }],
+      };
+
+      const existingOrder = new Order();
+      existingOrder.orderId = orderId;
+      existingOrder.po = "PO-001";
+      existingOrder.shippingCost = 3000;
+      existingOrder.totalPurchase = 10000;
+      existingOrder.grandTotal = 13000;
+
+      const mockBuyer = new Person();
+      mockBuyer.personId = 1;
+      existingOrder.buyer = mockBuyer;
+
+      const mockRecipient = new Person();
+      mockRecipient.personId = 2;
+      existingOrder.recipient = mockRecipient;
+
+      existingOrder.orderItems = [] as any;
+
+      const item1 = new Item();
+      item1.itemId = 1;
+      item1.price = 100;
+
+      (ORDER_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingOrder,
+      );
+      mockEm.populate.mockResolvedValue(undefined);
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([item1]);
+      (ORDER_REPOSITORY.save as jest.Mock).mockResolvedValue(existingOrder);
+      mockEm.remove.mockResolvedValue(undefined);
+      mockEm.persist.mockResolvedValue(undefined);
+      mockEm.flush.mockResolvedValue(undefined);
+
+      // Spy on Map.prototype.get to make it return undefined on the second call
+      // This tests the defensive check at line 377
+      const originalGet = Map.prototype.get;
+      const mapGetSpy = jest.spyOn(Map.prototype, "get");
+      let callCount = 0;
+      mapGetSpy.mockImplementation(function (this: Map<any, any>, key: any) {
+        callCount++;
+        // First call (in totalPurchase loop) returns item, second call (in orderItem loop) returns undefined
+        if (callCount === 1) {
+          return originalGet.call(this, key);
+        }
+        return undefined;
+      });
+
+      await expect(
+        MANAGE_ORDER.update(mockEm, orderId, updates),
+      ).rejects.toThrow("Item 1 not found");
+
+      mapGetSpy.mockRestore();
     });
   });
 

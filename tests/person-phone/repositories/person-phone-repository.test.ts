@@ -17,6 +17,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
       persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
+      find: jest.fn(),
     };
   });
 
@@ -45,7 +46,12 @@ describe("PERSON_PHONE_REPOSITORY", () => {
       phone.preferred = true;
       phone.person = mockPerson;
 
-      mockEm.nativeUpdate.mockResolvedValue(undefined);
+      const existingPreferred = new PersonPhone();
+      existingPreferred.phoneId = 1;
+      existingPreferred.preferred = true;
+      existingPreferred.person = mockPerson;
+
+      mockEm.find.mockResolvedValue([existingPreferred]);
 
       const result = await PERSON_PHONE_REPOSITORY.save(
         mockEm,
@@ -53,14 +59,11 @@ describe("PERSON_PHONE_REPOSITORY", () => {
         mockPerson,
       );
 
-      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        PersonPhone,
-        {
-          person: { personId: mockPerson.personId },
-          preferred: true,
-        },
-        { preferred: false },
-      );
+      expect(mockEm.find).toHaveBeenCalledWith(PersonPhone, {
+        person: { personId: mockPerson.personId },
+        preferred: true,
+      });
+      expect(existingPreferred.preferred).toBe(false);
       expect(phone.person).toBe(mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(phone);
       expect(result).toBe(phone);
@@ -72,19 +75,21 @@ describe("PERSON_PHONE_REPOSITORY", () => {
       phone.phoneNumber = "555-1234";
       phone.preferred = true;
 
-      mockEm.nativeUpdate.mockResolvedValue(undefined);
+      const existingPreferred = new PersonPhone();
+      existingPreferred.phoneId = 1;
+      existingPreferred.preferred = true;
+      existingPreferred.person = mockPerson;
+
+      mockEm.find.mockResolvedValue([existingPreferred]);
 
       await PERSON_PHONE_REPOSITORY.save(mockEm, phone, mockPerson);
 
-      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        PersonPhone,
-        {
-          person: { personId: mockPerson.personId },
-          preferred: true,
-          phoneId: { $ne: phone.phoneId },
-        },
-        { preferred: false },
-      );
+      expect(mockEm.find).toHaveBeenCalledWith(PersonPhone, {
+        person: { personId: mockPerson.personId },
+        preferred: true,
+        phoneId: { $ne: phone.phoneId },
+      });
+      expect(existingPreferred.preferred).toBe(false);
     });
   });
 
