@@ -10,6 +10,7 @@ import { PersonPhone } from "../../../src/person-phone/entities/person-phone.ent
 import { PersonAddress } from "../../../src/person-address/entities/person-address.entity";
 import { PERSON_PHONE_REPOSITORY } from "../../../src/person-phone/repositories/person-phone-repository";
 import { PERSON_ADDRESS_REPOSITORY } from "../../../src/person-address/repositories/person-address-repository";
+import { InvalidRequestParameterException } from "../../../src/api/models/error";
 
 jest.mock("../../../src/person/repositories/person-repository", () => ({
   PERSON_REPOSITORY: {
@@ -125,8 +126,10 @@ describe("MANAGE_PERSON", () => {
       createdPerson.personId = 1;
       createdPerson.personName = "Test Person";
       // Collections need to be iterable for Array.from()
-      createdPerson.phones = [] as any;
-      createdPerson.addresses = [] as any;
+      const phonesArray: any = [];
+      createdPerson.phones = phonesArray;
+      const addressesArray: any = [];
+      createdPerson.addresses = addressesArray;
 
       (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
       mockEm.flush.mockResolvedValue(undefined);
@@ -339,7 +342,6 @@ describe("MANAGE_PERSON", () => {
           return phone;
         },
       );
-
       await MANAGE_PERSON.create(mockEm, personData, false);
 
       expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
@@ -521,7 +523,7 @@ describe("MANAGE_PERSON", () => {
         phone: {
           phoneId,
           phoneNumber: "555-8888",
-          preferred: false,
+          preferred: true,
         },
       };
 
@@ -570,6 +572,38 @@ describe("MANAGE_PERSON", () => {
         "phones",
         "addresses",
       ]);
+    });
+
+    it("should throw InvalidRequestParameterException when trying to set phone preferred to false", async () => {
+      const personId = 1;
+      const updates: PersonUpdateRequest = {
+        personName: "Updated Person",
+        phone: {
+          phoneNumber: "555-8888",
+          preferred: false,
+        },
+      };
+
+      const existingPerson = new Person();
+      existingPerson.personId = personId;
+      existingPerson.personName = "Original Person";
+
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingPerson,
+      );
+
+      await expect(
+        MANAGE_PERSON.update(mockEm, updates, personId),
+      ).rejects.toThrow(InvalidRequestParameterException);
+
+      await expect(
+        MANAGE_PERSON.update(mockEm, updates, personId),
+      ).rejects.toThrow(
+        "Cannot set preferred to false. You can only toggle preferred from false to true.",
+      );
+
+      expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
+      expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
     });
 
     it("should update a person and create a new address", async () => {
@@ -632,7 +666,7 @@ describe("MANAGE_PERSON", () => {
         address: {
           addressId,
           address: "789 Updated St",
-          preferred: false,
+          preferred: true,
         },
       };
 
@@ -681,6 +715,38 @@ describe("MANAGE_PERSON", () => {
         "phones",
         "addresses",
       ]);
+    });
+
+    it("should throw InvalidRequestParameterException when trying to set address preferred to false", async () => {
+      const personId = 1;
+      const updates: PersonUpdateRequest = {
+        personName: "Updated Person",
+        address: {
+          address: "789 Updated St",
+          preferred: false,
+        },
+      };
+
+      const existingPerson = new Person();
+      existingPerson.personId = personId;
+      existingPerson.personName = "Original Person";
+
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingPerson,
+      );
+
+      await expect(
+        MANAGE_PERSON.update(mockEm, updates, personId),
+      ).rejects.toThrow(InvalidRequestParameterException);
+
+      await expect(
+        MANAGE_PERSON.update(mockEm, updates, personId),
+      ).rejects.toThrow(
+        "Cannot set preferred to false. You can only toggle preferred from false to true.",
+      );
+
+      expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
+      expect(PERSON_ADDRESS_REPOSITORY.save).not.toHaveBeenCalled();
     });
 
     it("should update a person with both phone and address", async () => {

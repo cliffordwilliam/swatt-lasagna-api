@@ -11,6 +11,7 @@ import { PersonPhone } from "../../person-phone/entities/person-phone.entity";
 import { PersonAddress } from "../../person-address/entities/person-address.entity";
 import { PERSON_PHONE_REPOSITORY } from "../../person-phone/repositories/person-phone-repository";
 import { PERSON_ADDRESS_REPOSITORY } from "../../person-address/repositories/person-address-repository";
+import { InvalidRequestParameterException } from "../../api/models/error";
 
 export const MANAGE_PERSON = {
   async list(em: EntityManager, filters: PersonFilter) {
@@ -32,8 +33,9 @@ export const MANAGE_PERSON = {
     phone: PersonPhone | null;
     address: PersonAddress | null;
   } {
-    const person = new Person();
     const { phoneNumber, address: addressValue, ...personData } = dto;
+
+    const person = new Person();
     assignSafe(personData, person);
 
     let phone: PersonPhone | null = null;
@@ -89,6 +91,12 @@ export const MANAGE_PERSON = {
     assignSafe(updates, existingPerson);
 
     if (updates.phone !== undefined) {
+      if (updates.phone.preferred === false) {
+        throw new InvalidRequestParameterException(
+          "Cannot set preferred to false. You can only toggle preferred from false to true.",
+        );
+      }
+
       let phone: PersonPhone;
       const { phoneId, ...phoneData } = updates.phone;
       if (phoneId !== undefined) {
@@ -105,6 +113,12 @@ export const MANAGE_PERSON = {
     }
 
     if (updates.address !== undefined) {
+      if (updates.address.preferred === false) {
+        throw new InvalidRequestParameterException(
+          "Cannot set preferred to false. You can only toggle preferred from false to true.",
+        );
+      }
+
       let address: PersonAddress;
       const { addressId, ...addressData } = updates.address;
       if (addressId !== undefined) {

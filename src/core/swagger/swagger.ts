@@ -18,6 +18,11 @@ import {
   PersonListResponse,
   PersonGetResponse,
 } from "../../person/schemas/person";
+import {
+  OrderCreateRequest,
+  OrderCreateResponse,
+  OrderGetResponse,
+} from "../../order/schemas/order";
 
 export default createDocument({
   openapi: "3.1.0",
@@ -168,6 +173,44 @@ export default createDocument({
             description: "Person updated",
             content: {
               "application/json": { schema: PersonUpdateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/order": {
+      post: {
+        summary: "Create order",
+        requestBody: {
+          content: {
+            "application/json": { schema: OrderCreateRequest },
+          },
+        },
+        responses: {
+          200: {
+            description: "Order created",
+            content: {
+              "application/json": { schema: OrderCreateResponse },
+            },
+          },
+        },
+      },
+    },
+
+    "/order/{id}": {
+      get: {
+        summary: "Get order by ID",
+        requestParams: {
+          path: z.object({
+            id: z.number().meta({ description: "Order ID" }),
+          }),
+        },
+        responses: {
+          200: {
+            description: "Order details",
+            content: {
+              "application/json": { schema: OrderGetResponse },
             },
           },
         },

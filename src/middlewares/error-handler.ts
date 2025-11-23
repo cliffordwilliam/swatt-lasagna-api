@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
 import { NotFoundError } from "@mikro-orm/core";
+import { InvalidRequestParameterException } from "../api/models/error";
 
 export default function errorHandler(
   err: Error,
@@ -34,6 +35,18 @@ export default function errorHandler(
         error: {
           message: err.message,
           code: "RESOURCE_NOT_FOUND",
+        },
+      }),
+    );
+    return;
+  }
+  if (err instanceof InvalidRequestParameterException) {
+    res.status(400).json(
+      ErrorResponse.parse({
+        success: false,
+        error: {
+          message: err.message,
+          code: "INVALID_REQUEST_PARAMETER",
         },
       }),
     );

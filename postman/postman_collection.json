@@ -350,6 +350,90 @@
           }
         }
       ]
+    },
+    {
+      "name": "Order",
+      "item": [
+        {
+          "name": "Create a New Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const uniquePO = `PO-${timestamp}`;",
+                  "pm.environment.set(\"order_po\", uniquePO);",
+                  "",
+                  "const orderDate = new Date();",
+                  "const deliveryDate = new Date();",
+                  "deliveryDate.setDate(deliveryDate.getDate() + 7);",
+                  "pm.environment.set(\"order_date\", orderDate.toISOString().split('T')[0]);",
+                  "pm.environment.set(\"delivery_date\", deliveryDate.toISOString().split('T')[0]);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Create a new order\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property(\"orderId\");",
+                  "    pm.expect(json.data).to.have.property(\"po\");",
+                  "    pm.expect(json.data).to.have.property(\"buyerId\");",
+                  "    pm.expect(json.data).to.have.property(\"recipientId\");",
+                  "    pm.expect(json.data).to.have.property(\"orderDate\");",
+                  "    pm.expect(json.data).to.have.property(\"deliveryDate\");",
+                  "    pm.expect(json.data).to.have.property(\"totalPurchase\");",
+                  "    pm.expect(json.data).to.have.property(\"pickupDelivery\");",
+                  "    pm.expect(json.data).to.have.property(\"shippingCost\");",
+                  "    pm.expect(json.data).to.have.property(\"grandTotal\");",
+                  "    pm.expect(json.data).to.have.property(\"payment\");",
+                  "    pm.expect(json.data).to.have.property(\"orderStatus\");",
+                  "    pm.expect(json.data).to.have.property(\"orderItems\");",
+                  "    pm.expect(json.data.orderItems).to.be.an('array');",
+                  "    pm.expect(json.data.orderItems.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "if (json.data && json.data.orderId) {",
+                  "    pm.environment.set(\"order_id\", json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po\": \"{{order_po}}\",\n  \"buyer\": {\n    \"personName\": \"John Buyer\",\n    \"phone\": {\n      \"phoneNumber\": \"555-1001\",\n      \"preferred\": true\n    },\n    \"address\": {\n      \"address\": \"123 Buyer Street, City, Country\",\n      \"preferred\": true\n    }\n  },\n  \"recipient\": {\n    \"personName\": \"Jane Recipient\",\n    \"phone\": {\n      \"phoneNumber\": \"555-2002\",\n      \"preferred\": true\n    },\n    \"address\": {\n      \"address\": \"456 Recipient Avenue, City, Country\",\n      \"preferred\": true\n    }\n  },\n  \"orderDate\": \"{{order_date}}\",\n  \"deliveryDate\": \"{{delivery_date}}\",\n  \"pickupDelivery\": \"Delivery\",\n  \"shippingCost\": 5000,\n  \"payment\": \"Transfer Bank\",\n  \"orderStatus\": \"Belum bayar\",\n  \"items\": [\n    {\n      \"itemId\": {{item_id}},\n      \"quantity\": 2\n    }\n  ],\n  \"note\": \"Please handle with care\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order",
+              "host": ["{{base_url}}"],
+              "path": ["order"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

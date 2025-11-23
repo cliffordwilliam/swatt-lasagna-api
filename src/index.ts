@@ -2,6 +2,7 @@ import "reflect-metadata";
 import express from "express";
 import itemRouter from "./item/router";
 import personRouter from "./person/router";
+import orderRouter from "./order/router";
 import errorHandler from "./middlewares/error-handler";
 import { getORM } from "./core/database/adapter";
 import { ENV } from "./core/config/constants";
@@ -26,6 +27,7 @@ import cors from "cors";
 
   app.use("/item", itemRouter);
   app.use("/person", personRouter);
+  app.use("/order", orderRouter);
 
   app.use(errorHandler);
 

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { SuccessResponse } from "../../api/schemas/api";
-import { PersonCreateRequest } from "../../person/schemas/person";
 import { PickupDeliveryEnum, PaymentEnum, OrderStatusEnum } from "./enums";
 
 export const OrderItemResponse = z
@@ -31,9 +30,35 @@ export const Order = z
   })
   .meta({ id: "Order" });
 
-export const PersonUpsertRequest = PersonCreateRequest.extend({
-  personId: z.coerce.number().int().positive().optional(),
-}).meta({ id: "PersonUpsertRequest" });
+export const PersonUpsertRequest = z
+  .object({
+    personId: z.coerce.number().int().positive().optional(),
+    personName: z
+      .string()
+      .min(1, "person name is required")
+      .max(100, "person name is too long"),
+    phone: z
+      .object({
+        phoneId: z.coerce.number().int().positive().optional(),
+        phoneNumber: z
+          .string()
+          .min(1, "phone number is too short")
+          .max(20, "phone number is too long"),
+        preferred: z.boolean(),
+      })
+      .optional(),
+    address: z
+      .object({
+        addressId: z.coerce.number().int().positive().optional(),
+        address: z
+          .string()
+          .min(1, "address is too short")
+          .max(500, "address is too long"),
+        preferred: z.boolean(),
+      })
+      .optional(),
+  })
+  .meta({ id: "PersonUpsertRequest" });
 export type PersonUpsertRequest = z.infer<typeof PersonUpsertRequest>;
 
 export const OrderItemRequest = z
@@ -59,8 +84,8 @@ export const OrderCreateRequest = z
       .max(255, "PO number is too long"),
     buyer: PersonUpsertRequest,
     recipient: PersonUpsertRequest,
-    orderDate: z.iso.date(),
-    deliveryDate: z.iso.date(),
+    orderDate: z.coerce.date(),
+    deliveryDate: z.coerce.date(),
     pickupDelivery: PickupDeliveryEnum,
     shippingCost: z.coerce
       .number()
@@ -80,3 +105,6 @@ export type OrderCreateRequest = z.infer<typeof OrderCreateRequest>;
 
 export const OrderCreateResponse = SuccessResponse(Order);
 export type OrderCreateResponse = z.infer<typeof OrderCreateResponse>;
+
+export const OrderGetResponse = SuccessResponse(Order);
+export type OrderGetResponse = z.infer<typeof OrderGetResponse>;
