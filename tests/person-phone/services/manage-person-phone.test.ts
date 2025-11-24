@@ -16,7 +16,7 @@ jest.mock(
     PERSON_PHONE_REPOSITORY: {
       getByIdOrFail: jest.fn(),
       list: jest.fn(),
-      save: jest.fn(),
+      toggleDownPreferred: jest.fn(),
     },
   }),
 );
@@ -30,6 +30,7 @@ jest.mock("../../../src/person/repositories/person-repository", () => ({
 const mockEm = {
   flush: jest.fn(),
   findOneOrFail: jest.fn(),
+  persist: jest.fn(),
 } as any;
 
 describe("MANAGE_PERSON_PHONE", () => {
@@ -117,22 +118,23 @@ describe("MANAGE_PERSON_PHONE", () => {
       (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         mockPerson,
       );
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => {
-          phone.person = person;
-          return phone;
-        },
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {
+        phone.person = person;
+      });
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON_PHONE.create(mockEm, phoneData);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
-      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalledWith(
+      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
         mockEm,
         expect.any(PersonPhone),
         mockPerson,
       );
+      expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonPhone));
       expect(mockEm.flush).toHaveBeenCalled();
       expect(result.personId).toBe(1);
     });
@@ -150,21 +152,22 @@ describe("MANAGE_PERSON_PHONE", () => {
       (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         mockPerson,
       );
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => {
-          phone.person = person;
-          return phone;
-        },
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {
+        phone.person = person;
+      });
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON_PHONE.create(mockEm, phoneData, false);
 
-      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalledWith(
+      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
         mockEm,
         expect.any(PersonPhone),
         mockPerson,
       );
+      expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonPhone));
       expect(mockEm.flush).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
     });
@@ -182,12 +185,12 @@ describe("MANAGE_PERSON_PHONE", () => {
       (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         mockPerson,
       );
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => {
-          phone.person = person;
-          return phone;
-        },
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {
+        phone.person = person;
+      });
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       await MANAGE_PERSON_PHONE.create(mockEm, phoneData, true);
@@ -214,9 +217,10 @@ describe("MANAGE_PERSON_PHONE", () => {
       existingPhone.person = mockPerson;
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => phone,
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {});
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON_PHONE.update(
@@ -230,11 +234,12 @@ describe("MANAGE_PERSON_PHONE", () => {
         phoneId,
         person: { personId },
       });
-      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalledWith(
+      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
         mockEm,
         existingPhone,
         mockPerson,
       );
+      expect(mockEm.persist).toHaveBeenCalledWith(existingPhone);
       expect(mockEm.flush).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
@@ -267,7 +272,9 @@ describe("MANAGE_PERSON_PHONE", () => {
         "Cannot set preferred to false. You can only toggle preferred from false to true.",
       );
 
-      expect(PERSON_PHONE_REPOSITORY.save).not.toHaveBeenCalled();
+      expect(
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred,
+      ).not.toHaveBeenCalled();
     });
 
     it("should allow updating preferred from false to true", async () => {
@@ -287,9 +294,10 @@ describe("MANAGE_PERSON_PHONE", () => {
       existingPhone.person = mockPerson;
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => phone,
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {});
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON_PHONE.update(
@@ -299,7 +307,8 @@ describe("MANAGE_PERSON_PHONE", () => {
         personId,
       );
 
-      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalled();
+      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
 
@@ -320,9 +329,10 @@ describe("MANAGE_PERSON_PHONE", () => {
       existingPhone.person = mockPerson;
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => phone,
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {});
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       const result = await MANAGE_PERSON_PHONE.update(
@@ -332,7 +342,8 @@ describe("MANAGE_PERSON_PHONE", () => {
         personId,
       );
 
-      expect(PERSON_PHONE_REPOSITORY.save).toHaveBeenCalled();
+      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
 
@@ -352,9 +363,10 @@ describe("MANAGE_PERSON_PHONE", () => {
       existingPhone.person = mockPerson;
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
-      (PERSON_PHONE_REPOSITORY.save as jest.Mock).mockImplementation(
-        async (em, phone, person) => phone,
-      );
+      (
+        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+      ).mockImplementation(async (em, phone, person) => {});
+      mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
 
       await MANAGE_PERSON_PHONE.update(

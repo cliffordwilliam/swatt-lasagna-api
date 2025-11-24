@@ -77,15 +77,33 @@ describe("ITEM_REPOSITORY", () => {
       expect(result).toEqual([]);
     });
 
-    it("should return empty array when no items found", async () => {
+    it("should throw error when not all items found", async () => {
       mockEm.find.mockResolvedValue([]);
 
-      const result = await ITEM_REPOSITORY.getByIds(mockEm, [1, 2]);
+      await expect(ITEM_REPOSITORY.getByIds(mockEm, [1, 2])).rejects.toThrow(
+        "Items not found: 1, 2",
+      );
 
       expect(mockEm.find).toHaveBeenCalledWith(Item, {
         itemId: { $in: [1, 2] },
       });
-      expect(result).toEqual([]);
+    });
+
+    it("should throw error when some items are missing", async () => {
+      const mockItem1 = new Item();
+      mockItem1.itemId = 1;
+      mockItem1.itemName = "Test Item 1";
+      mockItem1.price = 100;
+
+      mockEm.find.mockResolvedValue([mockItem1]);
+
+      await expect(ITEM_REPOSITORY.getByIds(mockEm, [1, 2])).rejects.toThrow(
+        "Items not found: 2",
+      );
+
+      expect(mockEm.find).toHaveBeenCalledWith(Item, {
+        itemId: { $in: [1, 2] },
+      });
     });
   });
 

@@ -40,7 +40,53 @@ export const MANAGE_PERSON = {
     };
   },
 
-  dtoToEntities(dto: PersonCreateRequest): {
+  async create(
+    em: EntityManager,
+    personData: PersonCreateRequest,
+    flush = true,
+  ) {
+    const createdPerson = await this._createPersonEntity(em, personData, flush);
+
+    return {
+      ...createdPerson,
+      phones: Array.from(createdPerson.phones).map((phone) => ({
+        ...phone,
+        personId: phone.person.personId,
+      })),
+      addresses: Array.from(createdPerson.addresses).map((address) => ({
+        ...address,
+        personId: address.person.personId,
+      })),
+    };
+  },
+
+  async update(
+    em: EntityManager,
+    updates: PersonUpdateRequest,
+    personId: number,
+    flush = true,
+  ) {
+    const existingPerson = await this._updatePersonEntity(
+      em,
+      updates,
+      personId,
+      flush,
+    );
+
+    return {
+      ...existingPerson,
+      phones: Array.from(existingPerson.phones).map((phone) => ({
+        ...phone,
+        personId: phone.person.personId,
+      })),
+      addresses: Array.from(existingPerson.addresses).map((address) => ({
+        ...address,
+        personId: address.person.personId,
+      })),
+    };
+  },
+
+  _dtoToEntities(dto: PersonCreateRequest): {
     person: Person;
     phone: PersonPhone | null;
     address: PersonAddress | null;
@@ -68,22 +114,32 @@ export const MANAGE_PERSON = {
     return { person, phone, address };
   },
 
-  async createPersonEntity(
+  async _createPersonEntity(
     em: EntityManager,
     personData: PersonCreateRequest,
     flush = true,
   ): Promise<Person> {
-    const { person, phone, address } = this.dtoToEntities(personData);
+    const { person, phone, address } = this._dtoToEntities(personData);
 
     const createdPerson = await PERSON_REPOSITORY.save(em, person);
 
     if (phone) {
       phone.person = createdPerson;
-      await PERSON_PHONE_REPOSITORY.save(em, phone, createdPerson);
+      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+        em,
+        phone,
+        createdPerson,
+      );
+      em.persist(phone);
     }
     if (address) {
       address.person = createdPerson;
-      await PERSON_ADDRESS_REPOSITORY.save(em, address, createdPerson);
+      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+        em,
+        address,
+        createdPerson,
+      );
+      em.persist(address);
     }
 
     if (flush) {
@@ -100,27 +156,7 @@ export const MANAGE_PERSON = {
     return createdPerson;
   },
 
-  async create(
-    em: EntityManager,
-    personData: PersonCreateRequest,
-    flush = true,
-  ) {
-    const createdPerson = await this.createPersonEntity(em, personData, flush);
-
-    return {
-      ...createdPerson,
-      phones: Array.from(createdPerson.phones).map((phone) => ({
-        ...phone,
-        personId: phone.person.personId,
-      })),
-      addresses: Array.from(createdPerson.addresses).map((address) => ({
-        ...address,
-        personId: address.person.personId,
-      })),
-    };
-  },
-
-  async updatePersonEntity(
+  async _updatePersonEntity(
     em: EntityManager,
     updates: PersonUpdateRequest,
     personId: number,
@@ -178,31 +214,5 @@ export const MANAGE_PERSON = {
     ]);
 
     return existingPerson;
-  },
-
-  async update(
-    em: EntityManager,
-    updates: PersonUpdateRequest,
-    personId: number,
-    flush = true,
-  ) {
-    const existingPerson = await this.updatePersonEntity(
-      em,
-      updates,
-      personId,
-      flush,
-    );
-
-    return {
-      ...existingPerson,
-      phones: Array.from(existingPerson.phones).map((phone) => ({
-        ...phone,
-        personId: phone.person.personId,
-      })),
-      addresses: Array.from(existingPerson.addresses).map((address) => ({
-        ...address,
-        personId: address.person.personId,
-      })),
-    };
   },
 };

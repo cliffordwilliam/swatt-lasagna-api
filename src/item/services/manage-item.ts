@@ -24,8 +24,8 @@ export const MANAGE_ITEM = {
     flush = true,
   ) {
     const existingEntity = await ITEM_REPOSITORY.getByIdOrFail(em, itemId);
-    assignSafe(updates, existingEntity);
     const saved = await ITEM_REPOSITORY.save(em, existingEntity);
+    assignSafe(updates, existingEntity);
     if (flush) {
       await em.flush();
     }
@@ -34,8 +34,8 @@ export const MANAGE_ITEM = {
 
   async create(em: EntityManager, itemData: ItemCreateRequest, flush = true) {
     const item = new Item();
-    assignSafe(itemData, item);
     const saved = await ITEM_REPOSITORY.save(em, item);
+    assignSafe(itemData, item);
     if (flush) {
       await em.flush();
     }

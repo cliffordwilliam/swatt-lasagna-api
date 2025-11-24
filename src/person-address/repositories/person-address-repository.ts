@@ -67,7 +67,11 @@ export const PERSON_ADDRESS_REPOSITORY = {
     };
   },
 
-  async save(em: EntityManager, address: PersonAddress, person: Person) {
+  async toggleDownPreferred(
+    em: EntityManager,
+    address: PersonAddress,
+    person: Person,
+  ) {
     if (address.preferred) {
       const existingPreferred = await em.find(PersonAddress, {
         person: { personId: person.personId },
@@ -79,9 +83,5 @@ export const PERSON_ADDRESS_REPOSITORY = {
         addr.preferred = false;
       });
     }
-
-    em.persist(address);
-
-    return address;
   },
 };

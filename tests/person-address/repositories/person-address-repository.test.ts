@@ -21,26 +21,23 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
     };
   });
 
-  describe("save", () => {
-    it("should save an address without preferred flag", async () => {
+  describe("toggleDownPreferred", () => {
+    it("should not toggle when address is not preferred", async () => {
       const address = new PersonAddress();
       address.address = "123 Test St";
       address.preferred = false;
       address.person = mockPerson;
 
-      const result = await PERSON_ADDRESS_REPOSITORY.save(
+      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
         mockEm,
         address,
         mockPerson,
       );
 
-      expect(mockEm.nativeUpdate).not.toHaveBeenCalled();
-      expect(address.person).toBe(mockPerson);
-      expect(mockEm.persist).toHaveBeenCalledWith(address);
-      expect(result).toBe(address);
+      expect(mockEm.find).not.toHaveBeenCalled();
     });
 
-    it("should save a preferred address and unset other preferred addresses", async () => {
+    it("should toggle down preferred addresses when address is preferred", async () => {
       const address = new PersonAddress();
       address.address = "123 Test St";
       address.preferred = true;
@@ -53,7 +50,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      const result = await PERSON_ADDRESS_REPOSITORY.save(
+      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
         mockEm,
         address,
         mockPerson,
@@ -64,9 +61,6 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
         preferred: true,
       });
       expect(existingPreferred.preferred).toBe(false);
-      expect(address.person).toBe(mockPerson);
-      expect(mockEm.persist).toHaveBeenCalledWith(address);
-      expect(result).toBe(address);
     });
 
     it("should exclude current address when updating preferred addresses if addressId exists", async () => {
@@ -82,7 +76,11 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_ADDRESS_REPOSITORY.save(mockEm, address, mockPerson);
+      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+        mockEm,
+        address,
+        mockPerson,
+      );
 
       expect(mockEm.find).toHaveBeenCalledWith(PersonAddress, {
         person: { personId: mockPerson.personId },

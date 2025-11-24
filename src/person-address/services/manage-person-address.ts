@@ -41,7 +41,8 @@ export const MANAGE_PERSON_ADDRESS = {
     address.preferred = addressData.preferred;
     address.person = person;
 
-    await PERSON_ADDRESS_REPOSITORY.save(em, address, person);
+    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(em, address, person);
+    em.persist(address);
 
     if (flush) {
       await em.flush();
@@ -73,7 +74,12 @@ export const MANAGE_PERSON_ADDRESS = {
 
     assignSafe(updates, address);
 
-    await PERSON_ADDRESS_REPOSITORY.save(em, address, address.person);
+    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+      em,
+      address,
+      address.person,
+    );
+    em.persist(address);
 
     if (flush) {
       await em.flush();

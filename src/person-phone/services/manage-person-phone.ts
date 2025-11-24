@@ -38,7 +38,8 @@ export const MANAGE_PERSON_PHONE = {
     phone.preferred = phoneData.preferred;
     phone.person = person;
 
-    await PERSON_PHONE_REPOSITORY.save(em, phone, person);
+    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, person);
+    em.persist(phone);
 
     if (flush) {
       await em.flush();
@@ -70,7 +71,8 @@ export const MANAGE_PERSON_PHONE = {
 
     assignSafe(updates, phone);
 
-    await PERSON_PHONE_REPOSITORY.save(em, phone, phone.person);
+    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, phone.person);
+    em.persist(phone);
 
     if (flush) {
       await em.flush();

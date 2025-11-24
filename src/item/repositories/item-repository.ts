@@ -12,7 +12,13 @@ export const ITEM_REPOSITORY = {
     if (itemIds.length === 0) {
       return [];
     }
-    return em.find(Item, { itemId: { $in: itemIds } });
+    const items = await em.find(Item, { itemId: { $in: itemIds } });
+    const foundIds = new Set(items.map((item) => item.itemId));
+    const missingIds = itemIds.filter((id) => !foundIds.has(id));
+    if (missingIds.length > 0) {
+      throw new Error(`Items not found: ${missingIds.join(", ")}`);
+    }
+    return items;
   },
 
   async list(em: EntityManager, filters: ItemFilter) {

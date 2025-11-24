@@ -21,26 +21,23 @@ describe("PERSON_PHONE_REPOSITORY", () => {
     };
   });
 
-  describe("save", () => {
-    it("should save a phone without preferred flag", async () => {
+  describe("toggleDownPreferred", () => {
+    it("should not toggle when phone is not preferred", async () => {
       const phone = new PersonPhone();
       phone.phoneNumber = "555-1234";
       phone.preferred = false;
       phone.person = mockPerson;
 
-      const result = await PERSON_PHONE_REPOSITORY.save(
+      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
         mockEm,
         phone,
         mockPerson,
       );
 
-      expect(mockEm.nativeUpdate).not.toHaveBeenCalled();
-      expect(phone.person).toBe(mockPerson);
-      expect(mockEm.persist).toHaveBeenCalledWith(phone);
-      expect(result).toBe(phone);
+      expect(mockEm.find).not.toHaveBeenCalled();
     });
 
-    it("should save a preferred phone and unset other preferred phones", async () => {
+    it("should toggle down preferred phones when phone is preferred", async () => {
       const phone = new PersonPhone();
       phone.phoneNumber = "555-1234";
       phone.preferred = true;
@@ -53,7 +50,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      const result = await PERSON_PHONE_REPOSITORY.save(
+      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
         mockEm,
         phone,
         mockPerson,
@@ -64,9 +61,6 @@ describe("PERSON_PHONE_REPOSITORY", () => {
         preferred: true,
       });
       expect(existingPreferred.preferred).toBe(false);
-      expect(phone.person).toBe(mockPerson);
-      expect(mockEm.persist).toHaveBeenCalledWith(phone);
-      expect(result).toBe(phone);
     });
 
     it("should exclude current phone when updating preferred phones if phoneId exists", async () => {
@@ -82,7 +76,11 @@ describe("PERSON_PHONE_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_PHONE_REPOSITORY.save(mockEm, phone, mockPerson);
+      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+        mockEm,
+        phone,
+        mockPerson,
+      );
 
       expect(mockEm.find).toHaveBeenCalledWith(PersonPhone, {
         person: { personId: mockPerson.personId },

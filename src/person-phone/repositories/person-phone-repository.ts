@@ -63,7 +63,11 @@ export const PERSON_PHONE_REPOSITORY = {
     };
   },
 
-  async save(em: EntityManager, phone: PersonPhone, person: Person) {
+  async toggleDownPreferred(
+    em: EntityManager,
+    phone: PersonPhone,
+    person: Person,
+  ) {
     if (phone.preferred) {
       const existingPreferred = await em.find(PersonPhone, {
         person: { personId: person.personId },
@@ -75,9 +79,5 @@ export const PERSON_PHONE_REPOSITORY = {
         ph.preferred = false;
       });
     }
-
-    em.persist(phone);
-
-    return phone;
   },
 };
