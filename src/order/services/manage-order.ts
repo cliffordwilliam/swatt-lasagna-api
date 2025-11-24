@@ -3,6 +3,7 @@ import {
   OrderCreateRequest,
   OrderUpdateRequest,
   OrderFilter,
+  OrderItemRequest,
   PersonUpsertRequest,
 } from "../schemas/order";
 import { Order } from "../entities/order.entity";
@@ -54,13 +55,10 @@ export const MANAGE_ORDER = {
     const order = new Order();
     assignSafe(orderDataRest, order);
 
-    const itemMap = await this._getItemsMap(em, orderItemValues);
-
-    let totalPurchase = 0;
-    for (const orderItemValue of orderItemValues) {
-      const item = itemMap[orderItemValue.itemId];
-      totalPurchase += item.price * orderItemValue.quantity;
-    }
+    const { totalPurchase, itemMap } = await this._prepareOrderItems(
+      em,
+      orderItemValues,
+    );
 
     order.totalPurchase = totalPurchase;
     order.grandTotal = totalPurchase + orderData.shippingCost;
@@ -70,13 +68,11 @@ export const MANAGE_ORDER = {
 
     em.persist(order);
 
-    for (const orderItemValue of orderItemValues) {
-      const item = itemMap[orderItemValue.itemId];
-
+    for (const { item, quantity } of Object.values(itemMap)) {
       const orderItem = new OrderItem();
       orderItem.order = order;
       orderItem.item = item;
-      orderItem.quantity = orderItemValue.quantity;
+      orderItem.quantity = quantity;
       em.persist(orderItem);
     }
 
@@ -120,22 +116,15 @@ export const MANAGE_ORDER = {
     } = updates;
     assignSafe(orderDataRest, existingOrder);
 
+    let itemMap: Record<number, { item: Item; quantity: number }> = {};
+
     if (orderItemValues) {
       em.remove(existingOrder.orderItems);
 
-      const itemMap = await this._getItemsMap(em, orderItemValues);
+      const { totalPurchase, itemMap: givenItemMap } =
+        await this._prepareOrderItems(em, orderItemValues);
 
-      let totalPurchase = 0;
-      for (const orderItemValue of orderItemValues) {
-        const item = itemMap[orderItemValue.itemId];
-        totalPurchase += item.price * orderItemValue.quantity;
-
-        const orderItem = new OrderItem();
-        orderItem.order = existingOrder;
-        orderItem.item = item;
-        orderItem.quantity = orderItemValue.quantity;
-        em.persist(orderItem);
-      }
+      itemMap = givenItemMap;
 
       existingOrder.totalPurchase = totalPurchase;
     }
@@ -160,6 +149,16 @@ export const MANAGE_ORDER = {
     }
 
     em.persist(existingOrder);
+
+    if (orderItemValues) {
+      for (const { item, quantity } of Object.values(itemMap)) {
+        const orderItem = new OrderItem();
+        orderItem.order = existingOrder;
+        orderItem.item = item;
+        orderItem.quantity = quantity;
+        em.persist(orderItem);
+      }
+    }
 
     if (flush) {
       await em.flush();
@@ -230,13 +229,31 @@ export const MANAGE_ORDER = {
     }
   },
 
-  async _getItemsMap(em: EntityManager, orderItemValues: { itemId: number }[]) {
+  async _prepareOrderItems(
+    em: EntityManager,
+    orderItemValues: OrderItemRequest[],
+  ) {
     const itemIds = orderItemValues.map(({ itemId }) => itemId);
     const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
-    const itemMap: Record<number, Item> = {};
+    const itemMap: Record<number, { item: Item; quantity: number }> = {};
+    let totalPurchase = 0;
+
     for (const item of items) {
-      itemMap[item.itemId] = item;
+      const orderItemValue = orderItemValues.find(
+        (orderItem) => orderItem.itemId === item.itemId,
+      );
+      if (!orderItemValue) {
+        throw new Error(`Quantity for item ${item.itemId} not provided`);
+      }
+      const quantity = orderItemValue.quantity;
+
+      itemMap[item.itemId] = {
+        item,
+        quantity,
+      };
+      totalPurchase += item.price * quantity;
     }
-    return itemMap;
+
+    return { itemMap, totalPurchase };
   },
 };

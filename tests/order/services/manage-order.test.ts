@@ -123,14 +123,19 @@ describe("MANAGE_ORDER", () => {
 
       const buyerPerson = { personId: 101 } as Person;
       const recipientPerson = { personId: 202 } as Person;
-      const itemMap = {
-        1: { itemId: 1, price: 50 } as Item,
-        2: { itemId: 2, price: 40 } as Item,
+      const itemOne = { itemId: 1, price: 50 } as Item;
+      const itemTwo = { itemId: 2, price: 40 } as Item;
+      const preparedItems = {
+        totalPurchase: 140,
+        itemMap: {
+          1: { item: itemOne, quantity: 2 },
+          2: { item: itemTwo, quantity: 1 },
+        },
       };
 
-      const itemsMapSpy = jest
-        .spyOn(MANAGE_ORDER as any, "_getItemsMap")
-        .mockResolvedValue(itemMap);
+      const prepareItemsSpy = jest
+        .spyOn(MANAGE_ORDER as any, "_prepareOrderItems")
+        .mockResolvedValue(preparedItems);
       const upsertSpy = jest
         .spyOn(MANAGE_ORDER as any, "_getPersonFromUpsert")
         .mockResolvedValueOnce(buyerPerson)
@@ -140,15 +145,15 @@ describe("MANAGE_ORDER", () => {
           order.buyer = buyerPerson;
           order.recipient = recipientPerson;
           order.orderItems = new Set([
-            { item: itemMap[1], quantity: 2 },
-            { item: itemMap[2], quantity: 1 },
+            { item: itemOne, quantity: 2 },
+            { item: itemTwo, quantity: 1 },
           ]) as any;
         },
       );
 
       const result = await MANAGE_ORDER.create(mockEm, orderData);
 
-      expect(itemsMapSpy).toHaveBeenCalledWith(mockEm, orderData.items);
+      expect(prepareItemsSpy).toHaveBeenCalledWith(mockEm, orderData.items);
       expect(upsertSpy).toHaveBeenNthCalledWith(
         1,
         mockEm,
@@ -192,9 +197,11 @@ describe("MANAGE_ORDER", () => {
       const buyerPerson = { personId: 1 } as Person;
       const recipientPerson = { personId: 2 } as Person;
 
-      jest
-        .spyOn(MANAGE_ORDER as any, "_getItemsMap")
-        .mockResolvedValue({ 1: { itemId: 1, price: 25 } as Item });
+      const itemOne = { itemId: 1, price: 25 } as Item;
+      jest.spyOn(MANAGE_ORDER as any, "_prepareOrderItems").mockResolvedValue({
+        totalPurchase: 25,
+        itemMap: { 1: { item: itemOne, quantity: 1 } },
+      });
       jest
         .spyOn(MANAGE_ORDER as any, "_getPersonFromUpsert")
         .mockResolvedValueOnce(buyerPerson)
@@ -243,13 +250,11 @@ describe("MANAGE_ORDER", () => {
 
       const buyerPerson = { personId: 300 } as Person;
       const recipientPerson = { personId: 400 } as Person;
-      const itemMap = {
-        9: { itemId: 9, price: 25 } as Item,
-      };
-
-      jest
-        .spyOn(MANAGE_ORDER as any, "_getItemsMap")
-        .mockResolvedValue(itemMap);
+      const itemNine = { itemId: 9, price: 25 } as Item;
+      jest.spyOn(MANAGE_ORDER as any, "_prepareOrderItems").mockResolvedValue({
+        totalPurchase: 100,
+        itemMap: { 9: { item: itemNine, quantity: 4 } },
+      });
       const upsertSpy = jest
         .spyOn(MANAGE_ORDER as any, "_getPersonFromUpsert")
         .mockResolvedValueOnce(buyerPerson)
@@ -432,9 +437,12 @@ describe("MANAGE_ORDER", () => {
     });
   });
 
-  describe("_getItemsMap", () => {
-    it("returns map keyed by itemId", async () => {
-      const orderItemValues = [{ itemId: 1 }, { itemId: 2 }];
+  describe("_prepareOrderItems", () => {
+    it("returns quantity-aware map and total purchase", async () => {
+      const orderItemValues = [
+        { itemId: 1, quantity: 2 },
+        { itemId: 2, quantity: 1 },
+      ];
 
       const itemOne = { itemId: 1, price: 10 } as Item;
       const itemTwo = { itemId: 2, price: 20 } as Item;
@@ -444,14 +452,26 @@ describe("MANAGE_ORDER", () => {
         itemTwo,
       ]);
 
-      const map = await (MANAGE_ORDER as any)._getItemsMap(
+      const result = await (MANAGE_ORDER as any)._prepareOrderItems(
         mockEm,
         orderItemValues,
       );
 
       expect(ITEM_REPOSITORY.getByIds).toHaveBeenCalledWith(mockEm, [1, 2]);
-      expect(map[1]).toBe(itemOne);
-      expect(map[2]).toBe(itemTwo);
+      expect(result.totalPurchase).toBe(40);
+      expect(result.itemMap[1]).toEqual({ item: itemOne, quantity: 2 });
+      expect(result.itemMap[2]).toEqual({ item: itemTwo, quantity: 1 });
+    });
+
+    it("throws when quantity mapping is missing for returned item", async () => {
+      const orderItemValues: any[] = [];
+      const rogueItem = { itemId: 99, price: 5 } as Item;
+
+      (ITEM_REPOSITORY.getByIds as jest.Mock).mockResolvedValue([rogueItem]);
+
+      await expect(
+        (MANAGE_ORDER as any)._prepareOrderItems(mockEm, orderItemValues),
+      ).rejects.toThrow("Quantity for item 99 not provided");
     });
   });
 });
