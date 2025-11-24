@@ -29,7 +29,7 @@ describe("ORDER_REPOSITORY", () => {
     mockEm = {
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
-      persist: jest.fn(),
+      populate: jest.fn(),
     };
   });
 
@@ -43,7 +43,13 @@ describe("ORDER_REPOSITORY", () => {
 
       const result = await ORDER_REPOSITORY.getByIdOrFail(mockEm, 1);
 
-      expect(mockEm.findOneOrFail).toHaveBeenCalledWith(Order, { orderId: 1 });
+      expect(mockEm.findOneOrFail).toHaveBeenCalledWith(
+        Order,
+        { orderId: 1 },
+        {
+          populate: ["buyer", "recipient", "orderItems", "orderItems.item"],
+        },
+      );
       expect(result).toBe(mockOrder);
     });
   });
@@ -461,15 +467,18 @@ describe("ORDER_REPOSITORY", () => {
     });
   });
 
-  describe("save", () => {
-    it("should successfully save a valid order", async () => {
+  describe("populateRelations", () => {
+    it("should populate order relations", async () => {
       const order = new Order();
-      order.po = "PO-001";
 
-      const savedOrder = await ORDER_REPOSITORY.save(mockEm, order);
+      await ORDER_REPOSITORY.populateRelations(mockEm, order);
 
-      expect(mockEm.persist).toHaveBeenCalledWith(order);
-      expect(savedOrder).toBe(order);
+      expect(mockEm.populate).toHaveBeenCalledWith(order, [
+        "buyer",
+        "recipient",
+        "orderItems",
+        "orderItems.item",
+      ]);
     });
   });
 });

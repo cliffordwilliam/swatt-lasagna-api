@@ -16,6 +16,7 @@ import {
   PersonCreateRequest,
   PersonUpdateRequest,
 } from "../../person/schemas/person";
+import { Item } from "../../item/entities/item.entity";
 
 export const MANAGE_ORDER = {
   async list(em: EntityManager, filters: OrderFilter) {
@@ -24,12 +25,6 @@ export const MANAGE_ORDER = {
 
   async getById(em: EntityManager, orderId: number) {
     const order = await ORDER_REPOSITORY.getByIdOrFail(em, orderId);
-    await em.populate(order, [
-      "buyer",
-      "recipient",
-      "orderItems",
-      "orderItems.item",
-    ]);
 
     const {
       buyer,
@@ -59,41 +54,27 @@ export const MANAGE_ORDER = {
     const order = new Order();
     assignSafe(orderDataRest, order);
 
-    const itemIds = orderItemValues.map((oi) => oi.itemId);
-    const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
-    const itemMap = new Map(items.map((item) => [item.itemId, item]));
+    const itemMap = await this._getItemsMap(em, orderItemValues);
 
     let totalPurchase = 0;
     for (const orderItemValue of orderItemValues) {
-      const item = itemMap.get(orderItemValue.itemId);
-      if (!item) {
-        throw new Error(`Item ${orderItemValue.itemId} not found in map`);
-      }
+      const item = itemMap[orderItemValue.itemId];
       totalPurchase += item.price * orderItemValue.quantity;
     }
 
     order.totalPurchase = totalPurchase;
     order.grandTotal = totalPurchase + orderData.shippingCost;
 
-    const buyerEntity = await this._getPersonFromUpsert(em, buyer, false);
-    const recipientEntity = await this._getPersonFromUpsert(
-      em,
-      recipient,
-      false,
-    );
-    order.buyer = buyerEntity;
-    order.recipient = recipientEntity;
+    order.buyer = await this._getPersonFromUpsert(em, buyer, false);
+    order.recipient = await this._getPersonFromUpsert(em, recipient, false);
 
-    const createdOrder = await ORDER_REPOSITORY.save(em, order);
+    em.persist(order);
 
     for (const orderItemValue of orderItemValues) {
-      const item = itemMap.get(orderItemValue.itemId);
-      if (!item) {
-        throw new Error(`Item ${orderItemValue.itemId} not found in map`);
-      }
+      const item = itemMap[orderItemValue.itemId];
 
       const orderItem = new OrderItem();
-      orderItem.order = createdOrder;
+      orderItem.order = order;
       orderItem.item = item;
       orderItem.quantity = orderItemValue.quantity;
       em.persist(orderItem);
@@ -103,19 +84,14 @@ export const MANAGE_ORDER = {
       await em.flush();
     }
 
-    await em.populate(createdOrder, [
-      "buyer",
-      "recipient",
-      "orderItems",
-      "orderItems.item",
-    ]);
+    await ORDER_REPOSITORY.populateRelations(em, order);
 
     const {
       buyer: buyerEntityPopulated,
       recipient: recipientEntityPopulated,
       orderItems: orderItemsCollection,
       ...orderRest
-    } = createdOrder;
+    } = order;
 
     return {
       ...orderRest,
@@ -135,12 +111,6 @@ export const MANAGE_ORDER = {
     flush = true,
   ) {
     const existingOrder = await ORDER_REPOSITORY.getByIdOrFail(em, orderId);
-    await em.populate(existingOrder, [
-      "buyer",
-      "recipient",
-      "orderItems",
-      "orderItems.item",
-    ]);
 
     const {
       buyer: buyerValue,
@@ -151,21 +121,13 @@ export const MANAGE_ORDER = {
     assignSafe(orderDataRest, existingOrder);
 
     if (orderItemValues) {
-      const existingOrderItems = Array.from(existingOrder.orderItems);
-      for (const orderItem of existingOrderItems) {
-        em.remove(orderItem);
-      }
+      em.remove(existingOrder.orderItems);
 
-      const itemIds = orderItemValues.map(({ itemId }) => itemId);
-      const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
-      const itemMap = new Map(items.map((item) => [item.itemId, item]));
+      const itemMap = await this._getItemsMap(em, orderItemValues);
 
       let totalPurchase = 0;
       for (const orderItemValue of orderItemValues) {
-        const item = itemMap.get(orderItemValue.itemId);
-        if (!item) {
-          throw new Error(`Item ${orderItemValue.itemId} not found in map`);
-        }
+        const item = itemMap[orderItemValue.itemId];
         totalPurchase += item.price * orderItemValue.quantity;
 
         const orderItem = new OrderItem();
@@ -182,31 +144,28 @@ export const MANAGE_ORDER = {
       existingOrder.totalPurchase + existingOrder.shippingCost;
 
     if (buyerValue) {
-      const newBuyer = await this._getPersonFromUpsert(em, buyerValue, false);
-      existingOrder.buyer = newBuyer;
+      existingOrder.buyer = await this._getPersonFromUpsert(
+        em,
+        buyerValue,
+        false,
+      );
     }
 
     if (recipientValue) {
-      const newRecipient = await this._getPersonFromUpsert(
+      existingOrder.recipient = await this._getPersonFromUpsert(
         em,
         recipientValue,
         false,
       );
-      existingOrder.recipient = newRecipient;
     }
 
-    await ORDER_REPOSITORY.save(em, existingOrder);
+    em.persist(existingOrder);
 
     if (flush) {
       await em.flush();
     }
 
-    await em.populate(existingOrder, [
-      "buyer",
-      "recipient",
-      "orderItems",
-      "orderItems.item",
-    ]);
+    await ORDER_REPOSITORY.populateRelations(em, existingOrder);
 
     const {
       buyer: buyerEntity,
@@ -254,7 +213,7 @@ export const MANAGE_ORDER = {
         };
       }
 
-      return await MANAGE_PERSON._updatePersonEntity(
+      return await MANAGE_PERSON.updatePersonEntity(
         em,
         updateRequest,
         personId,
@@ -267,7 +226,17 @@ export const MANAGE_ORDER = {
         address: address?.address,
       };
 
-      return await MANAGE_PERSON._createPersonEntity(em, createRequest, flush);
+      return await MANAGE_PERSON.createPersonEntity(em, createRequest, flush);
     }
+  },
+
+  async _getItemsMap(em: EntityManager, orderItemValues: { itemId: number }[]) {
+    const itemIds = orderItemValues.map(({ itemId }) => itemId);
+    const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
+    const itemMap: Record<number, Item> = {};
+    for (const item of items) {
+      itemMap[item.itemId] = item;
+    }
+    return itemMap;
   },
 };

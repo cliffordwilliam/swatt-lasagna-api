@@ -8,6 +8,7 @@ import {
 } from "../schemas/person-phone";
 import { assignSafe } from "../../common/utils/assign-safe";
 import { PERSON_REPOSITORY } from "../../person/repositories/person-repository";
+import { Person } from "../../person/entities/person.entity";
 import { InvalidRequestParameterException } from "../../api/models/error";
 
 export const MANAGE_PERSON_PHONE = {
@@ -27,18 +28,17 @@ export const MANAGE_PERSON_PHONE = {
     em: EntityManager,
     phoneData: PersonPhoneCreateRequest,
     flush = true,
+    person?: Person,
   ) {
-    const person = await PERSON_REPOSITORY.getByIdOrFail(
-      em,
-      phoneData.personId,
-    );
+    const personEntity =
+      person ?? (await PERSON_REPOSITORY.getByIdOrFail(em, phoneData.personId));
 
     const phone = new PersonPhone();
     phone.phoneNumber = phoneData.phoneNumber;
     phone.preferred = phoneData.preferred;
-    phone.person = person;
+    phone.person = personEntity;
 
-    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, person);
+    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, personEntity);
     em.persist(phone);
 
     if (flush) {

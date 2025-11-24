@@ -139,6 +139,25 @@ describe("MANAGE_PERSON_ADDRESS", () => {
       expect(result.personId).toBe(1);
     });
 
+    it("should reuse provided person entity without reloading", async () => {
+      const addressData: PersonAddressCreateRequest = {
+        personId: 1,
+        address: "789 Manual St",
+        preferred: true,
+      };
+
+      const mockPerson = new Person();
+      mockPerson.personId = 1;
+
+      await MANAGE_PERSON_ADDRESS.create(mockEm, addressData, true, mockPerson);
+
+      expect(PERSON_REPOSITORY.getByIdOrFail).not.toHaveBeenCalled();
+      expect(
+        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+      ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), mockPerson);
+      expect(mockEm.flush).toHaveBeenCalled();
+    });
+
     it("should not flush when flush parameter is false", async () => {
       const addressData: PersonAddressCreateRequest = {
         personId: 1,

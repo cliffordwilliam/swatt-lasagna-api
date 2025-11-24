@@ -1,44 +1,21 @@
-import { Person } from "../../../src/person/entities/person.entity";
-import { PERSON_REPOSITORY } from "../../../src/person/repositories/person-repository";
 import { MANAGE_PERSON } from "../../../src/person/services/manage-person";
+import { PERSON_REPOSITORY } from "../../../src/person/repositories/person-repository";
+import { MANAGE_PERSON_PHONE } from "../../../src/person-phone/services/manage-person-phone";
+import { MANAGE_PERSON_ADDRESS } from "../../../src/person-address/services/manage-person-address";
 import {
   PersonCreateRequest,
   PersonFilter,
   PersonUpdateRequest,
 } from "../../../src/person/schemas/person";
-import { PersonPhone } from "../../../src/person-phone/entities/person-phone.entity";
-import { PersonAddress } from "../../../src/person-address/entities/person-address.entity";
-import { PERSON_PHONE_REPOSITORY } from "../../../src/person-phone/repositories/person-phone-repository";
-import { PERSON_ADDRESS_REPOSITORY } from "../../../src/person-address/repositories/person-address-repository";
-import { MANAGE_PERSON_PHONE } from "../../../src/person-phone/services/manage-person-phone";
-import { MANAGE_PERSON_ADDRESS } from "../../../src/person-address/services/manage-person-address";
-import { InvalidRequestParameterException } from "../../../src/api/models/error";
+import { Person } from "../../../src/person/entities/person.entity";
 
 jest.mock("../../../src/person/repositories/person-repository", () => ({
   PERSON_REPOSITORY: {
     list: jest.fn(),
     getByIdOrFail: jest.fn(),
-    save: jest.fn(),
+    populateRelations: jest.fn(),
   },
 }));
-
-jest.mock(
-  "../../../src/person-phone/repositories/person-phone-repository",
-  () => ({
-    PERSON_PHONE_REPOSITORY: {
-      toggleDownPreferred: jest.fn(),
-    },
-  }),
-);
-
-jest.mock(
-  "../../../src/person-address/repositories/person-address-repository",
-  () => ({
-    PERSON_ADDRESS_REPOSITORY: {
-      toggleDownPreferred: jest.fn(),
-    },
-  }),
-);
 
 jest.mock("../../../src/person-phone/services/manage-person-phone", () => ({
   MANAGE_PERSON_PHONE: {
@@ -54,382 +31,32 @@ jest.mock("../../../src/person-address/services/manage-person-address", () => ({
   },
 }));
 
-const mockEm = {
-  persist: jest.fn(),
-  flush: jest.fn(),
-  findOneOrFail: jest.fn(),
-  populate: jest.fn(),
-} as any;
-
 describe("MANAGE_PERSON", () => {
+  let mockEm: any;
+
   beforeEach(() => {
+    mockEm = {
+      persist: jest.fn(),
+      flush: jest.fn(),
+    };
     jest.clearAllMocks();
   });
 
-  describe("_dtoToEntities", () => {
-    it("should convert DTO with only personName to entities", () => {
-      const dto: PersonCreateRequest = {
-        personName: "Test Person",
-      };
-
-      const result = MANAGE_PERSON._dtoToEntities(dto);
-
-      expect(result.person).toBeInstanceOf(Person);
-      expect(result.person.personName).toBe("Test Person");
-      expect(result.phone).toBeNull();
-      expect(result.address).toBeNull();
-    });
-
-    it("should convert DTO with personName and phoneNumber to entities", () => {
-      const dto: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
-      };
-
-      const result = MANAGE_PERSON._dtoToEntities(dto);
-
-      expect(result.person).toBeInstanceOf(Person);
-      expect(result.person.personName).toBe("Test Person");
-      expect(result.phone).toBeInstanceOf(PersonPhone);
-      expect(result.phone?.phoneNumber).toBe("555-1234");
-      expect(result.phone?.preferred).toBe(true);
-      expect(result.address).toBeNull();
-    });
-
-    it("should convert DTO with personName and address to entities", () => {
-      const dto: PersonCreateRequest = {
-        personName: "Test Person",
-        address: "123 Test St",
-      };
-
-      const result = MANAGE_PERSON._dtoToEntities(dto);
-
-      expect(result.person).toBeInstanceOf(Person);
-      expect(result.person.personName).toBe("Test Person");
-      expect(result.phone).toBeNull();
-      expect(result.address).toBeInstanceOf(PersonAddress);
-      expect(result.address?.address).toBe("123 Test St");
-      expect(result.address?.preferred).toBe(true);
-    });
-
-    it("should convert DTO with all fields to entities", () => {
-      const dto: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
-        address: "123 Test St",
-      };
-
-      const result = MANAGE_PERSON._dtoToEntities(dto);
-
-      expect(result.person).toBeInstanceOf(Person);
-      expect(result.person.personName).toBe("Test Person");
-      expect(result.phone).toBeInstanceOf(PersonPhone);
-      expect(result.phone?.phoneNumber).toBe("555-1234");
-      expect(result.phone?.preferred).toBe(true);
-      expect(result.address).toBeInstanceOf(PersonAddress);
-      expect(result.address?.address).toBe("123 Test St");
-      expect(result.address?.preferred).toBe(true);
-    });
-  });
-
-  describe("create", () => {
-    it("should create a person with only personName", async () => {
-      const personData: PersonCreateRequest = {
-        personName: "Test Person",
-      };
-
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-      // Collections need to be iterable for Array.from()
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      mockEm.flush.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.create(mockEm, personData);
-
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(Person),
-      );
-      expect(
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred,
-      ).not.toHaveBeenCalled();
-      expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
-      ).not.toHaveBeenCalled();
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-      expect(result.personId).toBe(1);
-      expect(result.personName).toBe("Test Person");
-    });
-
-    it("should create a person with phoneNumber", async () => {
-      const personData: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
-      };
-
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-
-      const mockPhone = new PersonPhone();
-      mockPhone.phoneId = 1;
-      mockPhone.phoneNumber = "555-1234";
-      mockPhone.preferred = true;
-
-      // Create mock collections that are iterable
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      // Simulate MikroORM's automatic collection syncing when phone.person is set
-      (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, phone, person) => {
-        phone.person = person;
-        person.phones.push(phone); // Simulate MikroORM's automatic syncing
-      });
-      mockEm.persist.mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.create(mockEm, personData);
-
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(Person),
-      );
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(PersonPhone),
-        createdPerson,
-      );
-      expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonPhone));
-      expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
-      ).not.toHaveBeenCalled();
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-      expect(result.personId).toBe(1);
-      expect(result.phones).toHaveLength(1);
-    });
-
-    it("should create a person with address", async () => {
-      const personData: PersonCreateRequest = {
-        personName: "Test Person",
-        address: "123 Test St",
-      };
-
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-
-      const mockAddress = new PersonAddress();
-      mockAddress.addressId = 1;
-      mockAddress.address = "123 Test St";
-      mockAddress.preferred = true;
-
-      // Create mock collections that are iterable
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      // Simulate MikroORM's automatic collection syncing when address.person is set
-      (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, address, person) => {
-        address.person = person;
-        person.addresses.push(address); // Simulate MikroORM's automatic syncing
-      });
-      mockEm.persist.mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.create(mockEm, personData);
-
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(Person),
-      );
-      expect(
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred,
-      ).not.toHaveBeenCalled();
-      expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
-      ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), createdPerson);
-      expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonAddress));
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-      expect(result.personId).toBe(1);
-      expect(result.addresses).toHaveLength(1);
-    });
-
-    it("should create a person with phoneNumber and address", async () => {
-      const personData: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
-        address: "123 Test St",
-      };
-
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-
-      const mockPhone = new PersonPhone();
-      mockPhone.phoneId = 1;
-      mockPhone.phoneNumber = "555-1234";
-      mockPhone.preferred = true;
-
-      const mockAddress = new PersonAddress();
-      mockAddress.addressId = 1;
-      mockAddress.address = "123 Test St";
-      mockAddress.preferred = true;
-
-      // Create mock collections that are iterable
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      // Simulate MikroORM's automatic collection syncing when phone.person is set
-      (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, phone, person) => {
-        phone.person = person;
-        person.phones.push(phone); // Simulate MikroORM's automatic syncing
-      });
-      // Simulate MikroORM's automatic collection syncing when address.person is set
-      (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, address, person) => {
-        address.person = person;
-        person.addresses.push(address); // Simulate MikroORM's automatic syncing
-      });
-      mockEm.persist.mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.create(mockEm, personData);
-
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(Person),
-      );
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(PersonPhone),
-        createdPerson,
-      );
-      expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
-      ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), createdPerson);
-      expect(mockEm.persist).toHaveBeenCalledTimes(2);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-      expect(result.personId).toBe(1);
-      expect(result.phones).toHaveLength(1);
-      expect(result.addresses).toHaveLength(1);
-    });
-
-    it("should not flush when flush parameter is false", async () => {
-      const personData: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
-      };
-
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, phone, person) => {
-        phone.person = person;
-        person.phones.push(phone);
-      });
-      mockEm.persist.mockResolvedValue(undefined);
-      await MANAGE_PERSON.create(mockEm, personData, false);
-
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(Person),
-      );
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalled();
-      expect(mockEm.flush).not.toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-    });
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe("list", () => {
-    it("should call PERSON_REPOSITORY.list with filters", async () => {
+    it("calls PERSON_REPOSITORY.list with provided filters", async () => {
       const filters: PersonFilter = {
         page: 1,
-        pageSize: 10,
+        pageSize: 20,
         sortField: "personName",
         sortOrder: "asc",
         mode: "and",
       };
 
-      const mockPerson = new Person();
-      mockPerson.personId = 1;
-      mockPerson.personName = "Test Person";
-      mockPerson.phones = [] as any;
-      mockPerson.addresses = [] as any;
-
-      const mockResult = {
-        data: [mockPerson],
-        pagination: {
-          page: 1,
-          pageSize: 10,
-          totalCount: 1,
-          totalPages: 1,
-          hasNext: false,
-          hasPrevious: false,
-        },
-      };
-
+      const mockResult = { data: [], pagination: {} as any };
       (PERSON_REPOSITORY.list as jest.Mock).mockResolvedValue(mockResult);
 
       const result = await MANAGE_PERSON.list(mockEm, filters);
@@ -440,761 +67,207 @@ describe("MANAGE_PERSON", () => {
   });
 
   describe("getById", () => {
-    it("should call PERSON_REPOSITORY.getByIdOrFail and populate collections", async () => {
-      const personId = 1;
-      const mockPerson = new Person();
-      mockPerson.personId = personId;
-      mockPerson.personName = "Test Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      mockPerson.phones = phonesArray;
-      mockPerson.addresses = addressesArray;
+    it("normalizes related phones and addresses", async () => {
+      const phone = {
+        phoneId: 1,
+        phoneNumber: "555-1111",
+        person: { personId: 10 },
+      };
+      const address = {
+        addressId: 2,
+        address: "123 Main",
+        person: { personId: 10 },
+      };
 
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        mockPerson,
-      );
-      mockEm.populate.mockResolvedValue(undefined);
+      const person = {
+        personId: 5,
+        personName: "Alice",
+        phones: new Set([phone]),
+        addresses: new Set([address]),
+      } as unknown as Person;
 
-      const result = await MANAGE_PERSON.getById(mockEm, personId);
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(person);
 
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(mockEm.populate).toHaveBeenCalledWith(mockPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
+      const result = await MANAGE_PERSON.getById(mockEm, 5);
+
+      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 5);
+      expect(result.phones).toEqual([
+        { ...phone, personId: phone.person.personId },
       ]);
-      expect(result).toEqual({
-        ...mockPerson,
-        phones: [],
-        addresses: [],
-      });
+      expect(result.addresses).toEqual([
+        { ...address, personId: address.person.personId },
+      ]);
     });
+  });
 
-    it("should map phones and addresses with personId from person relationship", async () => {
-      const personId = 1;
-      const mockPerson = new Person();
-      mockPerson.personId = personId;
-      mockPerson.personName = "Test Person";
+  describe("create", () => {
+    it("delegates to createPersonEntity and normalizes response", async () => {
+      const personData: PersonCreateRequest = {
+        personName: "Bob",
+        phoneNumber: "555-0000",
+        address: "456 Broad",
+      };
 
-      const mockPhone = new PersonPhone();
-      mockPhone.phoneId = 1;
-      mockPhone.phoneNumber = "555-1234";
-      mockPhone.preferred = true;
-      mockPhone.person = mockPerson;
+      const phone = {
+        phoneId: 1,
+        phoneNumber: "555-0000",
+        person: { personId: 12 },
+      };
+      const address = {
+        addressId: 2,
+        address: "456 Broad",
+        person: { personId: 12 },
+      };
 
-      const mockAddress = new PersonAddress();
-      mockAddress.addressId = 1;
-      mockAddress.address = "123 Test St";
-      mockAddress.preferred = true;
-      mockAddress.person = mockPerson;
+      const createdPerson = {
+        personId: 12,
+        personName: "Bob",
+        phones: [phone],
+        addresses: [address],
+      } as unknown as Person;
 
-      const phonesArray: any = [mockPhone];
-      const addressesArray: any = [mockAddress];
-      mockPerson.phones = phonesArray;
-      mockPerson.addresses = addressesArray;
+      const spy = jest
+        .spyOn(MANAGE_PERSON, "createPersonEntity")
+        .mockResolvedValue(createdPerson);
 
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        mockPerson,
-      );
-      mockEm.populate.mockResolvedValue(undefined);
+      const result = await MANAGE_PERSON.create(mockEm, personData);
 
-      const result = await MANAGE_PERSON.getById(mockEm, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(mockEm.populate).toHaveBeenCalledWith(mockPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
+      expect(spy).toHaveBeenCalledWith(mockEm, personData, true);
+      expect(result.phones).toEqual([
+        { ...phone, personId: phone.person.personId },
       ]);
-      expect(result.phones).toHaveLength(1);
-      expect(result.phones[0].personId).toBe(personId);
-      expect(result.addresses).toHaveLength(1);
-      expect(result.addresses[0].personId).toBe(personId);
+      expect(result.addresses).toEqual([
+        { ...address, personId: address.person.personId },
+      ]);
     });
   });
 
   describe("update", () => {
-    it("should update a person with only personName", async () => {
-      const personId = 1;
+    it("delegates to updatePersonEntity and normalizes response", async () => {
       const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
+        personName: "Updated",
       };
+      const phone = {
+        phoneId: 3,
+        phoneNumber: "555-3333",
+        person: { personId: 20 },
+      };
+      const address = {
+        addressId: 4,
+        address: "789 Circle",
+        person: { personId: 20 },
+      };
+      const existingPerson = {
+        personId: 20,
+        personName: "Updated",
+        phones: [phone],
+        addresses: [address],
+      } as unknown as Person;
 
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
+      const spy = jest
+        .spyOn(MANAGE_PERSON, "updatePersonEntity")
+        .mockResolvedValue(existingPerson);
 
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
+      const result = await MANAGE_PERSON.update(mockEm, updates, 20);
 
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
+      expect(spy).toHaveBeenCalledWith(mockEm, updates, 20, true);
+      expect(result.phones).toEqual([
+        { ...phone, personId: phone.person.personId },
       ]);
-      expect(MANAGE_PERSON_PHONE.create).not.toHaveBeenCalled();
-      expect(MANAGE_PERSON_PHONE.update).not.toHaveBeenCalled();
-      expect(MANAGE_PERSON_ADDRESS.create).not.toHaveBeenCalled();
-      expect(MANAGE_PERSON_ADDRESS.update).not.toHaveBeenCalled();
-      expect(result.personName).toBe("Updated Person");
-    });
-
-    it("should update a person and create a new phone", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneNumber: "555-9999",
-          preferred: true,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.create as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_PHONE.create).toHaveBeenCalledWith(
-        mockEm,
-        { personId, phoneNumber: "555-9999", preferred: true },
-        false,
-      );
-      expect(MANAGE_PERSON_ADDRESS.create).not.toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
+      expect(result.addresses).toEqual([
+        { ...address, personId: address.person.personId },
       ]);
-    });
-
-    it("should update a person and update an existing phone", async () => {
-      const personId = 1;
-      const phoneId = 10;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneId,
-          phoneNumber: "555-8888",
-          preferred: true,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.update as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_PHONE.update).toHaveBeenCalledWith(
-        mockEm,
-        phoneId,
-        { phoneNumber: "555-8888", preferred: true },
-        personId,
-        false,
-      );
-      expect(MANAGE_PERSON_ADDRESS.update).not.toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-    });
-
-    it("should throw InvalidRequestParameterException when trying to set existing phone preferred from true to false", async () => {
-      const personId = 1;
-      const phoneId = 10;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneId,
-          phoneNumber: "555-8888",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.update as jest.Mock).mockRejectedValue(
-        new InvalidRequestParameterException(
-          "Cannot set preferred to false. You can only toggle preferred from false to true.",
-        ),
-      );
-
-      await expect(
-        MANAGE_PERSON.update(mockEm, updates, personId),
-      ).rejects.toThrow(InvalidRequestParameterException);
-
-      await expect(
-        MANAGE_PERSON.update(mockEm, updates, personId),
-      ).rejects.toThrow(
-        "Cannot set preferred to false. You can only toggle preferred from false to true.",
-      );
-
-      expect(MANAGE_PERSON_PHONE.update).toHaveBeenCalledWith(
-        mockEm,
-        phoneId,
-        { phoneNumber: "555-8888", preferred: false },
-        personId,
-        false,
-      );
-      expect(MANAGE_PERSON_ADDRESS.update).not.toHaveBeenCalled();
-    });
-
-    it("should allow creating a new phone with preferred false", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneNumber: "555-8888",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.create as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_PHONE.create).toHaveBeenCalledWith(
-        mockEm,
-        { personId, phoneNumber: "555-8888", preferred: false },
-        false,
-      );
-      expect(mockEm.flush).toHaveBeenCalled();
-    });
-
-    it("should allow updating existing phone with preferred false when existing is also false", async () => {
-      const personId = 1;
-      const phoneId = 10;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneId,
-          phoneNumber: "555-8888",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.update as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(MANAGE_PERSON_PHONE.update).toHaveBeenCalledWith(
-        mockEm,
-        phoneId,
-        { phoneNumber: "555-8888", preferred: false },
-        personId,
-        false,
-      );
-      expect(mockEm.flush).toHaveBeenCalled();
-    });
-
-    it("should update a person and create a new address", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        address: {
-          address: "456 New St",
-          preferred: true,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_ADDRESS.create as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_ADDRESS.create).toHaveBeenCalledWith(
-        mockEm,
-        { personId, address: "456 New St", preferred: true },
-        false,
-      );
-      expect(MANAGE_PERSON_PHONE.create).not.toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-    });
-
-    it("should update a person and update an existing address", async () => {
-      const personId = 1;
-      const addressId = 20;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        address: {
-          addressId,
-          address: "789 Updated St",
-          preferred: true,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_ADDRESS.update as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_ADDRESS.update).toHaveBeenCalledWith(
-        mockEm,
-        addressId,
-        { address: "789 Updated St", preferred: true },
-        personId,
-        false,
-      );
-      expect(MANAGE_PERSON_PHONE.update).not.toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-    });
-
-    it("should throw InvalidRequestParameterException when trying to set existing address preferred from true to false", async () => {
-      const personId = 1;
-      const addressId = 20;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        address: {
-          addressId,
-          address: "789 Updated St",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_ADDRESS.update as jest.Mock).mockRejectedValue(
-        new InvalidRequestParameterException(
-          "Cannot set preferred to false. You can only toggle preferred from false to true.",
-        ),
-      );
-
-      await expect(
-        MANAGE_PERSON.update(mockEm, updates, personId),
-      ).rejects.toThrow(InvalidRequestParameterException);
-
-      await expect(
-        MANAGE_PERSON.update(mockEm, updates, personId),
-      ).rejects.toThrow(
-        "Cannot set preferred to false. You can only toggle preferred from false to true.",
-      );
-
-      expect(MANAGE_PERSON_ADDRESS.update).toHaveBeenCalledWith(
-        mockEm,
-        addressId,
-        { address: "789 Updated St", preferred: false },
-        personId,
-        false,
-      );
-      expect(MANAGE_PERSON_PHONE.update).not.toHaveBeenCalled();
-    });
-
-    it("should allow creating a new address with preferred false", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        address: {
-          address: "789 Updated St",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_ADDRESS.create as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_ADDRESS.create).toHaveBeenCalledWith(
-        mockEm,
-        { personId, address: "789 Updated St", preferred: false },
-        false,
-      );
-      expect(mockEm.flush).toHaveBeenCalled();
-    });
-
-    it("should allow updating existing address with preferred false when existing is also false", async () => {
-      const personId = 1;
-      const addressId = 20;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        address: {
-          addressId,
-          address: "789 Updated St",
-          preferred: false,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_ADDRESS.update as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(MANAGE_PERSON_ADDRESS.update).toHaveBeenCalledWith(
-        mockEm,
-        addressId,
-        { address: "789 Updated St", preferred: false },
-        personId,
-        false,
-      );
-      expect(mockEm.flush).toHaveBeenCalled();
-    });
-
-    it("should update a person with both phone and address", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-        phone: {
-          phoneNumber: "555-7777",
-          preferred: true,
-        },
-        address: {
-          address: "999 Both St",
-          preferred: true,
-        },
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      (MANAGE_PERSON_PHONE.create as jest.Mock).mockResolvedValue(undefined);
-      (MANAGE_PERSON_ADDRESS.create as jest.Mock).mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(MANAGE_PERSON_PHONE.create).toHaveBeenCalled();
-      expect(MANAGE_PERSON_ADDRESS.create).toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-    });
-
-    it("should not flush when flush parameter is false", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Original Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      mockEm.populate.mockResolvedValue(undefined);
-
-      await MANAGE_PERSON.update(mockEm, updates, personId, false);
-
-      expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(
-        mockEm,
-        personId,
-      );
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).not.toHaveBeenCalled();
-      expect(mockEm.populate).toHaveBeenCalled();
-    });
-
-    it("should map phones and addresses with personId from person relationship in update", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Updated Person";
-
-      const mockPhone = new PersonPhone();
-      mockPhone.phoneId = 1;
-      mockPhone.phoneNumber = "555-1234";
-      mockPhone.preferred = true;
-      mockPhone.person = existingPerson;
-
-      const mockAddress = new PersonAddress();
-      mockAddress.addressId = 1;
-      mockAddress.address = "123 Test St";
-      mockAddress.preferred = true;
-      mockAddress.person = existingPerson;
-
-      const phonesArray: any = [mockPhone];
-      const addressesArray: any = [mockAddress];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
-        existingPerson,
-      );
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON.update(mockEm, updates, personId);
-
-      expect(result.phones).toHaveLength(1);
-      expect(result.phones[0].personId).toBe(personId);
-      expect(result.addresses).toHaveLength(1);
-      expect(result.addresses[0].personId).toBe(personId);
     });
   });
 
-  describe("_createPersonEntity", () => {
-    it("should create person entity with default flush=true", async () => {
+  describe("createPersonEntity", () => {
+    it("persists person, creates related records, flushes, and populates", async () => {
       const personData: PersonCreateRequest = {
-        personName: "Test Person",
-        phoneNumber: "555-1234",
+        personName: "Carol",
+        phoneNumber: "555-1111",
+        address: "123 Main",
       };
 
-      const createdPerson = new Person();
-      createdPerson.personId = 1;
-      createdPerson.personName = "Test Person";
-      const phonesArray: any = [];
-      createdPerson.phones = phonesArray;
-      const addressesArray: any = [];
-      createdPerson.addresses = addressesArray;
-
-      (PERSON_REPOSITORY.save as jest.Mock).mockResolvedValue(createdPerson);
-      (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
-      ).mockImplementation(async (em, phone, person) => {
-        phone.person = person;
-        person.phones.push(phone);
-      });
-      mockEm.persist.mockResolvedValue(undefined);
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
-
-      const result = await MANAGE_PERSON._createPersonEntity(
-        mockEm,
-        personData,
+      (PERSON_REPOSITORY.populateRelations as jest.Mock).mockResolvedValue(
+        undefined,
       );
+      const result = await MANAGE_PERSON.createPersonEntity(mockEm, personData);
 
-      expect(PERSON_REPOSITORY.save).toHaveBeenCalledWith(
+      const persistedPerson = mockEm.persist.mock.calls[0][0] as Person;
+      expect(persistedPerson.personName).toBe("Carol");
+      expect(MANAGE_PERSON_PHONE.create).toHaveBeenCalledWith(
         mockEm,
-        expect.any(Person),
+        {
+          personId: persistedPerson.personId,
+          phoneNumber: "555-1111",
+          preferred: true,
+        },
+        false,
+        persistedPerson,
       );
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
-      expect(mockEm.persist).toHaveBeenCalled();
-      expect(mockEm.flush).toHaveBeenCalled(); // default flush = true
-      expect(mockEm.populate).toHaveBeenCalledWith(createdPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
-      expect(result).toBe(createdPerson);
+      expect(MANAGE_PERSON_ADDRESS.create).toHaveBeenCalledWith(
+        mockEm,
+        {
+          personId: persistedPerson.personId,
+          address: "123 Main",
+          preferred: true,
+        },
+        false,
+        persistedPerson,
+      );
+      expect(mockEm.flush).toHaveBeenCalled();
+      expect(PERSON_REPOSITORY.populateRelations).toHaveBeenCalledWith(
+        mockEm,
+        persistedPerson,
+      );
+      expect(result).toBe(persistedPerson);
+    });
+
+    it("skips flush when flush flag is false", async () => {
+      const personData: PersonCreateRequest = {
+        personName: "Dave",
+      };
+
+      await MANAGE_PERSON.createPersonEntity(mockEm, personData, false);
+
+      expect(mockEm.flush).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON_PHONE.create).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON_ADDRESS.create).not.toHaveBeenCalled();
     });
   });
 
-  describe("_updatePersonEntity", () => {
-    it("should update person entity with default flush=true", async () => {
-      const personId = 1;
-      const updates: PersonUpdateRequest = {
-        personName: "Updated Person",
-      };
-
-      const existingPerson = new Person();
-      existingPerson.personId = personId;
-      existingPerson.personName = "Updated Person";
-      const phonesArray: any = [];
-      const addressesArray: any = [];
-      existingPerson.phones = phonesArray;
-      existingPerson.addresses = addressesArray;
+  describe("updatePersonEntity", () => {
+    it("updates related entities when identifiers are provided", async () => {
+      const personId = 42;
+      const existingPerson = {
+        personId,
+        personName: "Original",
+        phones: [],
+        addresses: [],
+      } as unknown as Person;
 
       (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
         existingPerson,
       );
-      mockEm.flush.mockResolvedValue(undefined);
-      mockEm.populate.mockResolvedValue(undefined);
+      (PERSON_REPOSITORY.populateRelations as jest.Mock).mockResolvedValue(
+        undefined,
+      );
 
-      const result = await MANAGE_PERSON._updatePersonEntity(
+      const updates: PersonUpdateRequest = {
+        personName: "Eve",
+        phone: {
+          phoneId: 100,
+          phoneNumber: "111-2222",
+          preferred: true,
+        },
+        address: {
+          addressId: 200,
+          address: "999 Elm",
+          preferred: false,
+        },
+      };
+
+      const result = await MANAGE_PERSON.updatePersonEntity(
         mockEm,
         updates,
         personId,
@@ -1204,15 +277,112 @@ describe("MANAGE_PERSON", () => {
         mockEm,
         personId,
       );
-      expect(mockEm.persist).toHaveBeenCalledWith(existingPerson);
-      expect(mockEm.flush).toHaveBeenCalled(); // default flush = true
-      expect(mockEm.populate).toHaveBeenCalledWith(existingPerson, [
-        "phones",
-        "phones.person",
-        "addresses",
-        "addresses.person",
-      ]);
+      expect(MANAGE_PERSON_PHONE.update).toHaveBeenCalledWith(
+        mockEm,
+        100,
+        { phoneNumber: "111-2222", preferred: true },
+        personId,
+        false,
+      );
+      expect(MANAGE_PERSON_ADDRESS.update).toHaveBeenCalledWith(
+        mockEm,
+        200,
+        { address: "999 Elm", preferred: false },
+        personId,
+        false,
+      );
+      expect(mockEm.flush).toHaveBeenCalled();
+      expect(PERSON_REPOSITORY.populateRelations).toHaveBeenCalledWith(
+        mockEm,
+        existingPerson,
+      );
       expect(result).toBe(existingPerson);
+      expect(existingPerson.personName).toBe("Eve");
+    });
+
+    it("creates new related entities and skips flush when asked", async () => {
+      const personId = 55;
+      const existingPerson = {
+        personId,
+        personName: "Original",
+        phones: [],
+        addresses: [],
+      } as unknown as Person;
+
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingPerson,
+      );
+      (PERSON_REPOSITORY.populateRelations as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      const updates: PersonUpdateRequest = {
+        phone: {
+          phoneNumber: "333-4444",
+          preferred: false,
+        },
+        address: {
+          address: "111 Pine",
+          preferred: true,
+        },
+      };
+
+      await MANAGE_PERSON.updatePersonEntity(mockEm, updates, personId, false);
+
+      expect(MANAGE_PERSON_PHONE.create).toHaveBeenCalledWith(
+        mockEm,
+        {
+          personId,
+          phoneNumber: "333-4444",
+          preferred: false,
+        },
+        false,
+        existingPerson,
+      );
+      expect(MANAGE_PERSON_ADDRESS.create).toHaveBeenCalledWith(
+        mockEm,
+        {
+          personId,
+          address: "111 Pine",
+          preferred: true,
+        },
+        false,
+        existingPerson,
+      );
+      expect(mockEm.flush).not.toHaveBeenCalled();
+    });
+
+    it("updates core fields when no phone or address payload is provided", async () => {
+      const personId = 77;
+      const existingPerson = {
+        personId,
+        personName: "Original",
+        phones: [],
+        addresses: [],
+      } as unknown as Person;
+
+      (PERSON_REPOSITORY.getByIdOrFail as jest.Mock).mockResolvedValue(
+        existingPerson,
+      );
+      (PERSON_REPOSITORY.populateRelations as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      const updates: PersonUpdateRequest = {
+        personName: "Only Name",
+      };
+
+      const result = await MANAGE_PERSON.updatePersonEntity(
+        mockEm,
+        updates,
+        personId,
+      );
+
+      expect(MANAGE_PERSON_PHONE.update).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON_PHONE.create).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON_ADDRESS.update).not.toHaveBeenCalled();
+      expect(MANAGE_PERSON_ADDRESS.create).not.toHaveBeenCalled();
+      expect(result.personName).toBe("Only Name");
     });
   });
 });

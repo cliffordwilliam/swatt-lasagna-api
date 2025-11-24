@@ -8,23 +8,10 @@ describe("PERSON_REPOSITORY", () => {
 
   beforeEach(() => {
     mockEm = {
-      persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
       populate: jest.fn(),
     };
-  });
-
-  describe("save", () => {
-    it("should successfully save a valid person", async () => {
-      const person = new Person();
-      person.personName = "Test Person";
-
-      const savedPerson = await PERSON_REPOSITORY.save(mockEm, person);
-
-      expect(mockEm.persist).toHaveBeenCalledWith(person);
-      expect(savedPerson).toBe(person);
-    });
   });
 
   describe("getByIdOrFail", () => {
@@ -37,9 +24,20 @@ describe("PERSON_REPOSITORY", () => {
 
       const result = await PERSON_REPOSITORY.getByIdOrFail(mockEm, 1);
 
-      expect(mockEm.findOneOrFail).toHaveBeenCalledWith(Person, {
-        personId: 1,
-      });
+      expect(mockEm.findOneOrFail).toHaveBeenCalledWith(
+        Person,
+        {
+          personId: 1,
+        },
+        {
+          populate: [
+            "phones",
+            "phones.person",
+            "addresses",
+            "addresses.person",
+          ],
+        },
+      );
       expect(result).toBe(mockPerson);
     });
   });
@@ -362,6 +360,21 @@ describe("PERSON_REPOSITORY", () => {
 
       expect(result.pagination.hasPrevious).toBe(false);
       expect(result.pagination.hasNext).toBe(false);
+    });
+  });
+
+  describe("populateRelations", () => {
+    it("should populate person relations", async () => {
+      const person = new Person();
+
+      await PERSON_REPOSITORY.populateRelations(mockEm, person);
+
+      expect(mockEm.populate).toHaveBeenCalledWith(person, [
+        "phones",
+        "phones.person",
+        "addresses",
+        "addresses.person",
+      ]);
     });
   });
 });

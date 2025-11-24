@@ -7,29 +7,10 @@ describe("ITEM_REPOSITORY", () => {
 
   beforeEach(() => {
     mockEm = {
-      persist: jest.fn(),
       findOneOrFail: jest.fn(),
       findAndCount: jest.fn(),
       find: jest.fn(),
     };
-  });
-
-  describe("save", () => {
-    it("should successfully save a valid item", async () => {
-      const itemData = {
-        itemName: "asd",
-        price: 123,
-      };
-
-      const item = new Item();
-      assignSafe(itemData, item);
-
-      const savedItem = await ITEM_REPOSITORY.save(mockEm, item);
-
-      expect(mockEm.persist).toHaveBeenCalledWith(item);
-
-      expect(savedItem).toBe(item);
-    });
   });
 
   describe("getByIdOrFail", () => {

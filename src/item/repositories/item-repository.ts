@@ -66,9 +66,4 @@ export const ITEM_REPOSITORY = {
       },
     };
   },
-
-  async save(em: EntityManager, item: Item) {
-    em.persist(item);
-    return item;
-  },
 };

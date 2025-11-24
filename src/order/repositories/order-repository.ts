@@ -3,9 +3,16 @@ import { Order } from "../entities/order.entity";
 import { FilterQuery } from "@mikro-orm/core";
 import { OrderFilter } from "../schemas/order";
 
+const ORDER_RELATIONS = [
+  "buyer",
+  "recipient",
+  "orderItems",
+  "orderItems.item",
+] as const;
+
 export const ORDER_REPOSITORY = {
   async getByIdOrFail(em: EntityManager, orderId: number) {
-    return em.findOneOrFail(Order, { orderId });
+    return em.findOneOrFail(Order, { orderId }, { populate: ORDER_RELATIONS });
   },
 
   async list(em: EntityManager, filters: OrderFilter) {
@@ -52,7 +59,7 @@ export const ORDER_REPOSITORY = {
       limit: filters.pageSize,
       offset: (filters.page - 1) * filters.pageSize,
       orderBy: { [sortField]: filters.sortOrder },
-      populate: ["buyer", "recipient", "orderItems", "orderItems.item"],
+      populate: ORDER_RELATIONS,
     });
 
     const totalPages = Math.ceil(totalCount / filters.pageSize);
@@ -86,8 +93,7 @@ export const ORDER_REPOSITORY = {
     };
   },
 
-  async save(em: EntityManager, order: Order) {
-    em.persist(order);
-    return order;
+  async populateRelations(em: EntityManager, order: Order) {
+    await em.populate(order, ORDER_RELATIONS);
   },
 };

@@ -3,9 +3,20 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { Person } from "../entities/person.entity";
 import { PersonFilter } from "../schemas/person";
 
+const PERSON_RELATIONS = [
+  "phones",
+  "phones.person",
+  "addresses",
+  "addresses.person",
+] as const;
+
 export const PERSON_REPOSITORY = {
   async getByIdOrFail(em: EntityManager, personId: number) {
-    return em.findOneOrFail(Person, { personId });
+    return em.findOneOrFail(
+      Person,
+      { personId },
+      { populate: PERSON_RELATIONS },
+    );
   },
 
   async list(em: EntityManager, filters: PersonFilter) {
@@ -32,7 +43,7 @@ export const PERSON_REPOSITORY = {
       limit: filters.pageSize,
       offset: (filters.page - 1) * filters.pageSize,
       orderBy: { [sortField]: filters.sortOrder },
-      populate: ["phones", "phones.person", "addresses", "addresses.person"],
+      populate: PERSON_RELATIONS,
     });
 
     const totalPages = Math.ceil(totalCount / filters.pageSize);
@@ -60,8 +71,7 @@ export const PERSON_REPOSITORY = {
     };
   },
 
-  async save(em: EntityManager, person: Person) {
-    em.persist(person);
-    return person;
+  async populateRelations(em: EntityManager, person: Person) {
+    await em.populate(person, PERSON_RELATIONS);
   },
 };

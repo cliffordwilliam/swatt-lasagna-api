@@ -8,6 +8,7 @@ import {
 } from "../schemas/person-address";
 import { assignSafe } from "../../common/utils/assign-safe";
 import { PERSON_REPOSITORY } from "../../person/repositories/person-repository";
+import { Person } from "../../person/entities/person.entity";
 import { InvalidRequestParameterException } from "../../api/models/error";
 
 export const MANAGE_PERSON_ADDRESS = {
@@ -30,18 +31,22 @@ export const MANAGE_PERSON_ADDRESS = {
     em: EntityManager,
     addressData: PersonAddressCreateRequest,
     flush = true,
+    person?: Person,
   ) {
-    const person = await PERSON_REPOSITORY.getByIdOrFail(
-      em,
-      addressData.personId,
-    );
+    const personEntity =
+      person ??
+      (await PERSON_REPOSITORY.getByIdOrFail(em, addressData.personId));
 
     const address = new PersonAddress();
     address.address = addressData.address;
     address.preferred = addressData.preferred;
-    address.person = person;
+    address.person = personEntity;
 
-    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(em, address, person);
+    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+      em,
+      address,
+      personEntity,
+    );
     em.persist(address);
 
     if (flush) {

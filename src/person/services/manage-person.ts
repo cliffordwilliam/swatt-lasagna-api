@@ -7,10 +7,6 @@ import {
   PersonUpdateRequest,
   PersonFilter,
 } from "../schemas/person";
-import { PersonPhone } from "../../person-phone/entities/person-phone.entity";
-import { PersonAddress } from "../../person-address/entities/person-address.entity";
-import { PERSON_PHONE_REPOSITORY } from "../../person-phone/repositories/person-phone-repository";
-import { PERSON_ADDRESS_REPOSITORY } from "../../person-address/repositories/person-address-repository";
 import { MANAGE_PERSON_PHONE } from "../../person-phone/services/manage-person-phone";
 import { MANAGE_PERSON_ADDRESS } from "../../person-address/services/manage-person-address";
 
@@ -21,12 +17,6 @@ export const MANAGE_PERSON = {
 
   async getById(em: EntityManager, personId: number) {
     const person = await PERSON_REPOSITORY.getByIdOrFail(em, personId);
-    await em.populate(person, [
-      "phones",
-      "phones.person",
-      "addresses",
-      "addresses.person",
-    ]);
     return {
       ...person,
       phones: Array.from(person.phones).map((phone) => ({
@@ -45,7 +35,7 @@ export const MANAGE_PERSON = {
     personData: PersonCreateRequest,
     flush = true,
   ) {
-    const createdPerson = await this._createPersonEntity(em, personData, flush);
+    const createdPerson = await this.createPersonEntity(em, personData, flush);
 
     return {
       ...createdPerson,
@@ -66,7 +56,7 @@ export const MANAGE_PERSON = {
     personId: number,
     flush = true,
   ) {
-    const existingPerson = await this._updatePersonEntity(
+    const existingPerson = await this.updatePersonEntity(
       em,
       updates,
       personId,
@@ -86,77 +76,57 @@ export const MANAGE_PERSON = {
     };
   },
 
-  _dtoToEntities(dto: PersonCreateRequest): {
-    person: Person;
-    phone: PersonPhone | null;
-    address: PersonAddress | null;
-  } {
-    const { phoneNumber, address: addressValue, ...personData } = dto;
-
-    let phone: PersonPhone | null = null;
-    let address: PersonAddress | null = null;
-
-    const person = new Person();
-    assignSafe(personData, person);
-
-    if (phoneNumber) {
-      phone = new PersonPhone();
-      phone.phoneNumber = phoneNumber;
-      phone.preferred = true;
-    }
-
-    if (addressValue) {
-      address = new PersonAddress();
-      address.address = addressValue;
-      address.preferred = true;
-    }
-
-    return { person, phone, address };
-  },
-
-  async _createPersonEntity(
+  async createPersonEntity(
     em: EntityManager,
     personData: PersonCreateRequest,
     flush = true,
   ): Promise<Person> {
-    const { person, phone, address } = this._dtoToEntities(personData);
+    const {
+      phoneNumber,
+      address: addressValue,
+      ...personDataRest
+    } = personData;
 
-    const createdPerson = await PERSON_REPOSITORY.save(em, person);
+    const person = new Person();
+    assignSafe(personDataRest, person);
 
-    if (phone) {
-      phone.person = createdPerson;
-      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+    em.persist(person);
+
+    if (phoneNumber) {
+      await MANAGE_PERSON_PHONE.create(
         em,
-        phone,
-        createdPerson,
+        {
+          personId: person.personId,
+          phoneNumber,
+          preferred: true,
+        },
+        false,
+        person,
       );
-      em.persist(phone);
     }
-    if (address) {
-      address.person = createdPerson;
-      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+    if (addressValue) {
+      await MANAGE_PERSON_ADDRESS.create(
         em,
-        address,
-        createdPerson,
+        {
+          personId: person.personId,
+          address: addressValue,
+          preferred: true,
+        },
+        false,
+        person,
       );
-      em.persist(address);
     }
 
     if (flush) {
       await em.flush();
     }
 
-    await em.populate(createdPerson, [
-      "phones",
-      "phones.person",
-      "addresses",
-      "addresses.person",
-    ]);
+    await PERSON_REPOSITORY.populateRelations(em, person);
 
-    return createdPerson;
+    return person;
   },
 
-  async _updatePersonEntity(
+  async updatePersonEntity(
     em: EntityManager,
     updates: PersonUpdateRequest,
     personId: number,
@@ -177,7 +147,12 @@ export const MANAGE_PERSON = {
           false,
         );
       } else {
-        await MANAGE_PERSON_PHONE.create(em, { personId, ...phoneData }, false);
+        await MANAGE_PERSON_PHONE.create(
+          em,
+          { personId, ...phoneData },
+          false,
+          existingPerson,
+        );
       }
     }
 
@@ -196,6 +171,7 @@ export const MANAGE_PERSON = {
           em,
           { personId, ...addressData },
           false,
+          existingPerson,
         );
       }
     }
@@ -206,12 +182,7 @@ export const MANAGE_PERSON = {
       await em.flush();
     }
 
-    await em.populate(existingPerson, [
-      "phones",
-      "phones.person",
-      "addresses",
-      "addresses.person",
-    ]);
+    await PERSON_REPOSITORY.populateRelations(em, existingPerson);
 
     return existingPerson;
   },
