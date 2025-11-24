@@ -21,14 +21,14 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
     };
   });
 
-  describe("toggleDownPreferred", () => {
+  describe("handleToggleDownPreferred", () => {
     it("should not toggle when address is not preferred", async () => {
       const address = new PersonAddress();
       address.address = "123 Test St";
       address.preferred = false;
       address.person = mockPerson;
 
-      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+      await PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         address,
         mockPerson,
@@ -50,7 +50,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+      await PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         address,
         mockPerson,
@@ -76,7 +76,7 @@ describe("PERSON_ADDRESS_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+      await PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         address,
         mockPerson,

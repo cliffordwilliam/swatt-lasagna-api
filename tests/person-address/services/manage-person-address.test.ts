@@ -16,7 +16,7 @@ jest.mock(
     PERSON_ADDRESS_REPOSITORY: {
       getByIdOrFail: jest.fn(),
       list: jest.fn(),
-      toggleDownPreferred: jest.fn(),
+      handleToggleDownPreferred: jest.fn(),
     },
   }),
 );
@@ -121,7 +121,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         mockPerson,
       );
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {
         address.person = person;
       });
@@ -132,7 +132,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
       expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
       ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonAddress));
       expect(mockEm.flush).toHaveBeenCalled();
@@ -153,7 +153,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       expect(PERSON_REPOSITORY.getByIdOrFail).not.toHaveBeenCalled();
       expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
       ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), mockPerson);
       expect(mockEm.flush).toHaveBeenCalled();
     });
@@ -172,7 +172,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         mockPerson,
       );
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {
         address.person = person;
       });
@@ -186,7 +186,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
       );
 
       expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
       ).toHaveBeenCalledWith(mockEm, expect.any(PersonAddress), mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonAddress));
       expect(mockEm.flush).not.toHaveBeenCalled();
@@ -207,7 +207,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         mockPerson,
       );
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {
         address.person = person;
       });
@@ -239,7 +239,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingAddress);
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -256,7 +256,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         person: { personId },
       });
       expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
       ).toHaveBeenCalledWith(mockEm, existingAddress, mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(existingAddress);
       expect(mockEm.flush).toHaveBeenCalled();
@@ -292,7 +292,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
       );
 
       expect(
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred,
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
       ).not.toHaveBeenCalled();
     });
 
@@ -314,7 +314,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingAddress);
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -326,7 +326,9 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         personId,
       );
 
-      expect(PERSON_ADDRESS_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
@@ -349,7 +351,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingAddress);
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -361,7 +363,9 @@ describe("MANAGE_PERSON_ADDRESS", () => {
         personId,
       );
 
-      expect(PERSON_ADDRESS_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
@@ -383,7 +387,7 @@ describe("MANAGE_PERSON_ADDRESS", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingAddress);
       (
-        PERSON_ADDRESS_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, address, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);

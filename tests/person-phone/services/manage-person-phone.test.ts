@@ -16,7 +16,7 @@ jest.mock(
     PERSON_PHONE_REPOSITORY: {
       getByIdOrFail: jest.fn(),
       list: jest.fn(),
-      toggleDownPreferred: jest.fn(),
+      handleToggleDownPreferred: jest.fn(),
     },
   }),
 );
@@ -119,7 +119,7 @@ describe("MANAGE_PERSON_PHONE", () => {
         mockPerson,
       );
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {
         phone.person = person;
       });
@@ -129,11 +129,9 @@ describe("MANAGE_PERSON_PHONE", () => {
       const result = await MANAGE_PERSON_PHONE.create(mockEm, phoneData);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).toHaveBeenCalledWith(mockEm, 1);
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(PersonPhone),
-        mockPerson,
-      );
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalledWith(mockEm, expect.any(PersonPhone), mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonPhone));
       expect(mockEm.flush).toHaveBeenCalled();
       expect(result.personId).toBe(1);
@@ -152,11 +150,9 @@ describe("MANAGE_PERSON_PHONE", () => {
       await MANAGE_PERSON_PHONE.create(mockEm, phoneData, true, mockPerson);
 
       expect(PERSON_REPOSITORY.getByIdOrFail).not.toHaveBeenCalled();
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(PersonPhone),
-        mockPerson,
-      );
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalledWith(mockEm, expect.any(PersonPhone), mockPerson);
       expect(mockEm.flush).toHaveBeenCalled();
     });
 
@@ -174,7 +170,7 @@ describe("MANAGE_PERSON_PHONE", () => {
         mockPerson,
       );
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {
         phone.person = person;
       });
@@ -183,11 +179,9 @@ describe("MANAGE_PERSON_PHONE", () => {
 
       const result = await MANAGE_PERSON_PHONE.create(mockEm, phoneData, false);
 
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        expect.any(PersonPhone),
-        mockPerson,
-      );
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalledWith(mockEm, expect.any(PersonPhone), mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(expect.any(PersonPhone));
       expect(mockEm.flush).not.toHaveBeenCalled();
       expect(result.personId).toBe(1);
@@ -207,7 +201,7 @@ describe("MANAGE_PERSON_PHONE", () => {
         mockPerson,
       );
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {
         phone.person = person;
       });
@@ -239,7 +233,7 @@ describe("MANAGE_PERSON_PHONE", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -255,11 +249,9 @@ describe("MANAGE_PERSON_PHONE", () => {
         phoneId,
         person: { personId },
       });
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalledWith(
-        mockEm,
-        existingPhone,
-        mockPerson,
-      );
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalledWith(mockEm, existingPhone, mockPerson);
       expect(mockEm.persist).toHaveBeenCalledWith(existingPhone);
       expect(mockEm.flush).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
@@ -294,7 +286,7 @@ describe("MANAGE_PERSON_PHONE", () => {
       );
 
       expect(
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred,
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
       ).not.toHaveBeenCalled();
     });
 
@@ -316,7 +308,7 @@ describe("MANAGE_PERSON_PHONE", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -328,7 +320,9 @@ describe("MANAGE_PERSON_PHONE", () => {
         personId,
       );
 
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
@@ -351,7 +345,7 @@ describe("MANAGE_PERSON_PHONE", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);
@@ -363,7 +357,9 @@ describe("MANAGE_PERSON_PHONE", () => {
         personId,
       );
 
-      expect(PERSON_PHONE_REPOSITORY.toggleDownPreferred).toHaveBeenCalled();
+      expect(
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred,
+      ).toHaveBeenCalled();
       expect(mockEm.persist).toHaveBeenCalled();
       expect(result.personId).toBe(personId);
     });
@@ -385,7 +381,7 @@ describe("MANAGE_PERSON_PHONE", () => {
 
       mockEm.findOneOrFail.mockResolvedValue(existingPhone);
       (
-        PERSON_PHONE_REPOSITORY.toggleDownPreferred as jest.Mock
+        PERSON_PHONE_REPOSITORY.handleToggleDownPreferred as jest.Mock
       ).mockImplementation(async (em, phone, person) => {});
       mockEm.persist.mockResolvedValue(undefined);
       mockEm.flush.mockResolvedValue(undefined);

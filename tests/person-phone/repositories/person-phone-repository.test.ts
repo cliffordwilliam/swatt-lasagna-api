@@ -21,14 +21,14 @@ describe("PERSON_PHONE_REPOSITORY", () => {
     };
   });
 
-  describe("toggleDownPreferred", () => {
+  describe("handleToggleDownPreferred", () => {
     it("should not toggle when phone is not preferred", async () => {
       const phone = new PersonPhone();
       phone.phoneNumber = "555-1234";
       phone.preferred = false;
       phone.person = mockPerson;
 
-      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+      await PERSON_PHONE_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         phone,
         mockPerson,
@@ -50,7 +50,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+      await PERSON_PHONE_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         phone,
         mockPerson,
@@ -76,7 +76,7 @@ describe("PERSON_PHONE_REPOSITORY", () => {
 
       mockEm.find.mockResolvedValue([existingPreferred]);
 
-      await PERSON_PHONE_REPOSITORY.toggleDownPreferred(
+      await PERSON_PHONE_REPOSITORY.handleToggleDownPreferred(
         mockEm,
         phone,
         mockPerson,

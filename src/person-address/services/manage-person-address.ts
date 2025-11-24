@@ -42,7 +42,7 @@ export const MANAGE_PERSON_ADDRESS = {
     address.preferred = addressData.preferred;
     address.person = personEntity;
 
-    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+    await PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred(
       em,
       address,
       personEntity,
@@ -79,7 +79,7 @@ export const MANAGE_PERSON_ADDRESS = {
 
     assignSafe(updates, address);
 
-    await PERSON_ADDRESS_REPOSITORY.toggleDownPreferred(
+    await PERSON_ADDRESS_REPOSITORY.handleToggleDownPreferred(
       em,
       address,
       address.person,

@@ -38,7 +38,11 @@ export const MANAGE_PERSON_PHONE = {
     phone.preferred = phoneData.preferred;
     phone.person = personEntity;
 
-    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, personEntity);
+    await PERSON_PHONE_REPOSITORY.handleToggleDownPreferred(
+      em,
+      phone,
+      personEntity,
+    );
     em.persist(phone);
 
     if (flush) {
@@ -71,7 +75,11 @@ export const MANAGE_PERSON_PHONE = {
 
     assignSafe(updates, phone);
 
-    await PERSON_PHONE_REPOSITORY.toggleDownPreferred(em, phone, phone.person);
+    await PERSON_PHONE_REPOSITORY.handleToggleDownPreferred(
+      em,
+      phone,
+      phone.person,
+    );
     em.persist(phone);
 
     if (flush) {

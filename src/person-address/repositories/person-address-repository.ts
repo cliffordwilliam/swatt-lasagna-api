@@ -67,7 +67,7 @@ export const PERSON_ADDRESS_REPOSITORY = {
     };
   },
 
-  async toggleDownPreferred(
+  async handleToggleDownPreferred(
     em: EntityManager,
     address: PersonAddress,
     person: Person,

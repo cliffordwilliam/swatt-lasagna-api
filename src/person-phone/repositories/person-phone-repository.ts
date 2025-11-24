@@ -63,7 +63,7 @@ export const PERSON_PHONE_REPOSITORY = {
     };
   },
 
-  async toggleDownPreferred(
+  async handleToggleDownPreferred(
     em: EntityManager,
     phone: PersonPhone,
     person: Person,
