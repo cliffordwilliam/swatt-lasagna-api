@@ -22,7 +22,7 @@
 - [x] fix inconsistent naming convention
 - [x] add swagger
 - [x] increase unit test to 100%
-- [ ] 1 person can have multiple phones and addresses, so make individual phone and address domain first, and study how to do one to many in mikroorm
+- [x] 1 person can have multiple phones and addresses, so make individual phone and address domain first, and study how to do one to many in mikroorm
 
 * **Files & folders:** `kebab-case`
 * **Variables & functions:** `camelCase`
