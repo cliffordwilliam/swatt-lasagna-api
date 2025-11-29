@@ -896,6 +896,259 @@
           }
         }
       ]
+    },
+    {
+      "name": "Order Snapshot Scenarios",
+      "item": [
+        {
+          "name": "Create Setup Item",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const uniqueItemName = `Snapshot Test Item ${timestamp}`;",
+                  "pm.environment.set(\"snapshot_test_item_name\", uniqueItemName);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"Setup item created\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});",
+                  "if (json.data && json.data.itemId) {",
+                  "    pm.environment.set(\"snapshot_test_item_id\", json.data.itemId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemName\": \"{{snapshot_test_item_name}}\",\n  \"price\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/item",
+              "host": ["{{base_url}}"],
+              "path": ["item"]
+            }
+          }
+        },
+        {
+          "name": "Create Order - No Snapshot Override",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.environment.set(\"snapshot_test_po_1\", `PO-SNAP-1-${timestamp}`);",
+                  "const date = new Date().toISOString().split('T')[0];",
+                  "pm.environment.set(\"snapshot_test_date\", date);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"Order created without override\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.data.orderItems[0].itemName).to.eql(pm.environment.get(\"snapshot_test_item_name\"));",
+                  "    pm.expect(json.data.orderItems[0].itemPrice).to.eql(100);",
+                  "});",
+                  "if (json.data && json.data.orderId) {",
+                  "    pm.environment.set(\"snapshot_test_order_id_1\", json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po\": \"{{snapshot_test_po_1}}\",\n  \"buyer\": {\n    \"personName\": \"Snapshot Buyer\"\n  },\n  \"recipient\": {\n    \"personName\": \"Snapshot Recipient\"\n  },\n  \"orderDate\": \"{{snapshot_test_date}}\",\n  \"deliveryDate\": \"{{snapshot_test_date}}\",\n  \"pickupDelivery\": \"Pickup\",\n  \"shippingCost\": 0,\n  \"payment\": \"Tunai\",\n  \"orderStatus\": \"Belum bayar\",\n  \"items\": [\n    {\n      \"itemId\": {{snapshot_test_item_id}},\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order",
+              "host": ["{{base_url}}"],
+              "path": ["order"]
+            }
+          }
+        },
+        {
+          "name": "Create Order - With Snapshot Override",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.environment.set(\"snapshot_test_po_2\", `PO-SNAP-2-${timestamp}`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"Order created with override\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.data.orderItems[0].itemName).to.eql(\"Override Name\");",
+                  "    pm.expect(json.data.orderItems[0].itemPrice).to.eql(999);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po\": \"{{snapshot_test_po_2}}\",\n  \"buyer\": {\n    \"personName\": \"Snapshot Buyer\"\n  },\n  \"recipient\": {\n    \"personName\": \"Snapshot Recipient\"\n  },\n  \"orderDate\": \"{{snapshot_test_date}}\",\n  \"deliveryDate\": \"{{snapshot_test_date}}\",\n  \"pickupDelivery\": \"Pickup\",\n  \"shippingCost\": 0,\n  \"payment\": \"Tunai\",\n  \"orderStatus\": \"Belum bayar\",\n  \"items\": [\n    {\n      \"itemId\": {{snapshot_test_item_id}},\n      \"quantity\": 1,\n      \"itemName\": \"Override Name\",\n      \"itemPrice\": 999\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order",
+              "host": ["{{base_url}}"],
+              "path": ["order"]
+            }
+          }
+        },
+        {
+          "name": "Update Order - No Snapshot Override",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"Order updated without override (reset)\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.data.orderItems[0].itemName).to.eql(pm.environment.get(\"snapshot_test_item_name\"));",
+                  "    pm.expect(json.data.orderItems[0].itemPrice).to.eql(100);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": {{snapshot_test_item_id}},\n      \"quantity\": 5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order/{{snapshot_test_order_id_1}}",
+              "host": ["{{base_url}}"],
+              "path": ["order", "{{snapshot_test_order_id_1}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Order - With Snapshot Override",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"Order updated with override\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    pm.expect(json.data.orderItems[0].itemName).to.eql(\"Update Override\");",
+                  "    pm.expect(json.data.orderItems[0].itemPrice).to.eql(888);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": {{snapshot_test_item_id}},\n      \"quantity\": 5,\n      \"itemName\": \"Update Override\",\n      \"itemPrice\": 888\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/order/{{snapshot_test_order_id_1}}",
+              "host": ["{{base_url}}"],
+              "path": ["order", "{{snapshot_test_order_id_1}}"]
+            }
+          }
+        }
+      ]
     }
   ]
 }

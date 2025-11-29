@@ -11,6 +11,8 @@ export const OrderItemResponse = z
   .object({
     itemId: z.int(),
     quantity: z.int(),
+    itemName: z.string(),
+    itemPrice: z.int(),
   })
   .meta({ id: "OrderItemResponse" });
 
@@ -28,7 +30,7 @@ export const Order = z
     grandTotal: z.int(),
     payment: PaymentEnum,
     orderStatus: OrderStatusEnum,
-    note: z.string().nullable(),
+    note: z.string().nullish(),
     orderItems: z.array(OrderItemResponse),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -77,6 +79,12 @@ export const OrderItemRequest = z
       .int()
       .min(1, "quantity must be at least 1")
       .max(10000, "quantity is too large"),
+    itemName: z.string().max(255, "item name is too long").optional(),
+    itemPrice: z.coerce
+      .number()
+      .int()
+      .positive("item price must be positive")
+      .optional(),
   })
   .meta({ id: "OrderItemRequest" });
 export type OrderItemRequest = z.infer<typeof OrderItemRequest>;

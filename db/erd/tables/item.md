@@ -8,13 +8,13 @@ Stores information about items/products available in the system.
 
 ### Record Details
 
-| Column     | Type      | Constraints           | Description                                |
-| ---------- | --------- | --------------------- | ------------------------------------------ |
-| item_id    | SERIAL    | PRIMARY KEY, NOT NULL | Unique identifier for this item            |
-| item_name  | VARCHAR   | NOT NULL              | Name of the item                           |
-| price      | INTEGER   | NOT NULL              | Price of the item                          |
-| created_at | TIMESTAMP | NOT NULL              | Timestamp when the record was created      |
-| updated_at | TIMESTAMP | NOT NULL              | Timestamp when the record was last updated |
+| Column     | Type         | Constraints           | Description                                |
+| ---------- | ------------ | --------------------- | ------------------------------------------ |
+| item_id    | SERIAL       | PRIMARY KEY, NOT NULL | Unique identifier for this item            |
+| item_name  | VARCHAR(255) | NOT NULL              | Name of the item                           |
+| price      | INTEGER      | NOT NULL              | Price of the item                          |
+| created_at | TIMESTAMP    | NOT NULL              | Timestamp when the record was created      |
+| updated_at | TIMESTAMP    | NOT NULL              | Timestamp when the record was last updated |
 
 ## Enums
 

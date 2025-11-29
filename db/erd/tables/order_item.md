@@ -2,17 +2,19 @@
 
 ## Description
 
-Junction table that links orders to items, storing the quantity of each item in an order.
+Junction table linking orders to items. Each row represents one item within an order and stores a snapshot of the item's name and price at the time the order was placed. This ensures order history remains accurate even if the item is later updated.
 
 ## Columns
 
 ### Record Details
 
-| Column   | Type    | Constraints           | Description                        |
-| -------- | ------- | --------------------- | ---------------------------------- |
-| order_id | INTEGER | FOREIGN KEY, NOT NULL | Reference to the order             |
-| item_id  | INTEGER | FOREIGN KEY, NOT NULL | Reference to the item              |
-| quantity | INTEGER | NOT NULL              | Quantity of the item in this order |
+| Column     | Type         | Constraints           | Description                              |
+| ---------- | ------------ | --------------------- | ---------------------------------------- |
+| order_id   | INTEGER      | FOREIGN KEY, NOT NULL | Reference to the order                   |
+| item_id    | INTEGER      | FOREIGN KEY, NOT NULL | Reference to the item                    |
+| quantity   | INTEGER      | NOT NULL              | Quantity of the item in this order       |
+| item_name  | VARCHAR(255) | NOT NULL              | Snapshot of the item name at order time  |
+| item_price | INTEGER      | NOT NULL              | Snapshot of the item price at order time |
 
 ## Enums
 
@@ -35,3 +37,4 @@ None
 2. Quantity must be a positive integer (greater than 0)
 3. An order_item cannot exist without a valid order
 4. An order_item cannot exist without a valid item
+5. item_name and item_price must reflect the item state at the time the order is created (historical snapshot)

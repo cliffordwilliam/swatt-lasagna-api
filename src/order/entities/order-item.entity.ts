@@ -20,4 +20,10 @@ export class OrderItem {
 
   @Property({ fieldName: "quantity" })
   quantity!: number;
+
+  @Property({ fieldName: "item_name", length: 255 })
+  itemName!: string;
+
+  @Property({ fieldName: "item_price" })
+  itemPrice!: number;
 }

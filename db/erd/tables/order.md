@@ -11,7 +11,7 @@ Stores order information including buyer, recipient, payment method, delivery me
 | Column          | Type                 | Constraints           | Description                                       |
 | --------------- | -------------------- | --------------------- | ------------------------------------------------- |
 | order_id        | SERIAL               | PRIMARY KEY, NOT NULL | Unique identifier for this order                  |
-| po              | VARCHAR              | NOT NULL              | Purchase order number                             |
+| po              | VARCHAR(255)         | NOT NULL              | Purchase order number                             |
 | buyer_id        | INTEGER              | FOREIGN KEY, NOT NULL | Reference to person who placed the order          |
 | recipient_id    | INTEGER              | FOREIGN KEY, NOT NULL | Reference to person who receives the order        |
 | order_date      | TIMESTAMP            | NOT NULL              | Date when the order was placed                    |

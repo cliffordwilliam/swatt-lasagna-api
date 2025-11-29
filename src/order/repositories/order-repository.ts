@@ -79,6 +79,8 @@ export const ORDER_REPOSITORY = {
           orderItems: Array.from(orderItemsCollection).map((oi) => ({
             itemId: oi.item.itemId,
             quantity: oi.quantity,
+            itemName: oi.itemName,
+            itemPrice: oi.itemPrice,
           })),
         };
       }),

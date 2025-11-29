@@ -41,6 +41,8 @@ export const MANAGE_ORDER = {
       orderItems: Array.from(orderItemsCollection).map((oi) => ({
         itemId: oi.item.itemId,
         quantity: oi.quantity,
+        itemName: oi.itemName,
+        itemPrice: oi.itemPrice,
       })),
     };
   },
@@ -55,7 +57,7 @@ export const MANAGE_ORDER = {
     const order = new Order();
     assignSafe(orderDataRest, order);
 
-    const { totalPurchase, itemMap } = await this._prepareOrderItems(
+    const { totalPurchase, preparedItemMap } = await this._prepareOrderItems(
       em,
       orderItemValues,
     );
@@ -68,11 +70,13 @@ export const MANAGE_ORDER = {
 
     em.persist(order);
 
-    for (const { item, quantity } of Object.values(itemMap)) {
+    for (const { item, quantity, itemName, itemPrice } of preparedItemMap) {
       const orderItem = new OrderItem();
       orderItem.order = order;
       orderItem.item = item;
       orderItem.quantity = quantity;
+      orderItem.itemName = itemName;
+      orderItem.itemPrice = itemPrice;
       em.persist(orderItem);
     }
 
@@ -96,6 +100,8 @@ export const MANAGE_ORDER = {
       orderItems: Array.from(orderItemsCollection).map((oi) => ({
         itemId: oi.item.itemId,
         quantity: oi.quantity,
+        itemName: oi.itemName,
+        itemPrice: oi.itemPrice,
       })),
     };
   },
@@ -116,15 +122,20 @@ export const MANAGE_ORDER = {
     } = updates;
     assignSafe(orderDataRest, existingOrder);
 
-    let itemMap: Record<number, { item: Item; quantity: number }> = {};
+    let preparedItemMap: {
+      item: Item;
+      quantity: number;
+      itemName: string;
+      itemPrice: number;
+    }[] = [];
 
     if (orderItemValues) {
       em.remove(existingOrder.orderItems);
 
-      const { totalPurchase, itemMap: givenItemMap } =
+      const { totalPurchase, preparedItemMap: givenPreparedItemMap } =
         await this._prepareOrderItems(em, orderItemValues);
 
-      itemMap = givenItemMap;
+      preparedItemMap = givenPreparedItemMap;
 
       existingOrder.totalPurchase = totalPurchase;
     }
@@ -151,11 +162,13 @@ export const MANAGE_ORDER = {
     em.persist(existingOrder);
 
     if (orderItemValues) {
-      for (const { item, quantity } of Object.values(itemMap)) {
+      for (const { item, quantity, itemName, itemPrice } of preparedItemMap) {
         const orderItem = new OrderItem();
         orderItem.order = existingOrder;
         orderItem.item = item;
         orderItem.quantity = quantity;
+        orderItem.itemName = itemName;
+        orderItem.itemPrice = itemPrice;
         em.persist(orderItem);
       }
     }
@@ -180,6 +193,8 @@ export const MANAGE_ORDER = {
       orderItems: Array.from(orderItemsCollection).map((oi) => ({
         itemId: oi.item.itemId,
         quantity: oi.quantity,
+        itemName: oi.itemName,
+        itemPrice: oi.itemPrice,
       })),
     };
   },
@@ -235,7 +250,12 @@ export const MANAGE_ORDER = {
   ) {
     const itemIds = orderItemValues.map(({ itemId }) => itemId);
     const items = await ITEM_REPOSITORY.getByIds(em, itemIds);
-    const itemMap: Record<number, { item: Item; quantity: number }> = {};
+    const preparedItemMap: {
+      item: Item;
+      quantity: number;
+      itemName: string;
+      itemPrice: number;
+    }[] = [];
     let totalPurchase = 0;
 
     for (const item of items) {
@@ -246,14 +266,18 @@ export const MANAGE_ORDER = {
         throw new Error(`Quantity for item ${item.itemId} not provided`);
       }
       const quantity = orderItemValue.quantity;
+      const itemName = orderItemValue.itemName ?? item.itemName;
+      const itemPrice = orderItemValue.itemPrice ?? item.price;
 
-      itemMap[item.itemId] = {
+      preparedItemMap.push({
         item,
         quantity,
-      };
-      totalPurchase += item.price * quantity;
+        itemName,
+        itemPrice,
+      });
+      totalPurchase += itemPrice * quantity;
     }
 
-    return { itemMap, totalPurchase };
+    return { preparedItemMap, totalPurchase };
   },
 };

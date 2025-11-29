@@ -8,12 +8,12 @@ Stores information about people in the system, including buyers and recipients o
 
 ### Record Details
 
-| Column      | Type      | Constraints           | Description                                |
-| ----------- | --------- | --------------------- | ------------------------------------------ |
-| person_id   | SERIAL    | PRIMARY KEY, NOT NULL | Unique identifier for this person          |
-| person_name | VARCHAR   | NOT NULL              | Full name of the person                    |
-| created_at  | TIMESTAMP | NOT NULL              | Timestamp when the record was created      |
-| updated_at  | TIMESTAMP | NOT NULL              | Timestamp when the record was last updated |
+| Column      | Type         | Constraints           | Description                                |
+| ----------- | ------------ | --------------------- | ------------------------------------------ |
+| person_id   | SERIAL       | PRIMARY KEY, NOT NULL | Unique identifier for this person          |
+| person_name | VARCHAR(255) | NOT NULL              | Full name of the person                    |
+| created_at  | TIMESTAMP    | NOT NULL              | Timestamp when the record was created      |
+| updated_at  | TIMESTAMP    | NOT NULL              | Timestamp when the record was last updated |
 
 ## Enums
 
