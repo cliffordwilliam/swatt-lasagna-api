@@ -23,6 +23,7 @@
 - [x] add swagger
 - [x] increase unit test to 100%
 - [x] 1 person can have multiple phones and addresses, so make individual phone and address domain first, and study how to do one to many in mikroorm
+- [ ] make error throw be consistent, some are just raw new Error instances...
 
 * **Files & folders:** `kebab-case`
 * **Variables & functions:** `camelCase`
