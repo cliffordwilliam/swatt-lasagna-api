@@ -3,15 +3,25 @@ import { ZodError } from "zod";
 import { ErrorResponse } from "../api/schemas/api";
 import { NotFoundError } from "@mikro-orm/core";
 import { InvalidRequestParameterException } from "../api/models/error";
+import logger from "../core/logging/logger";
 
 export default function errorHandler(
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ) {
-  console.log(err);
+  logger.error(
+    {
+      err,
+      path: req.path,
+      method: req.method,
+      query: req.query,
+      body: req.body,
+    },
+    `Error handling ${req.method} ${req.path}`,
+  );
   if (err instanceof ZodError) {
     res.status(422).json(
       ErrorResponse.parse({

@@ -8,7 +8,7 @@ cleanup() {
         kill "$APP_PID" 2>/dev/null || true
     fi
 
-    docker compose down
+    docker compose down -v
 }
 trap cleanup EXIT
 

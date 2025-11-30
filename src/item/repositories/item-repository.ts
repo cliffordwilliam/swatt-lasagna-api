@@ -1,4 +1,4 @@
-import { FilterQuery } from "@mikro-orm/core";
+import { FilterQuery, NotFoundError } from "@mikro-orm/core";
 import { Item } from "../entities/item.entity";
 import { ItemFilter } from "../schemas/item";
 import { EntityManager } from "@mikro-orm/postgresql";
@@ -16,7 +16,7 @@ export const ITEM_REPOSITORY = {
     const foundIds = new Set(items.map((item) => item.itemId));
     const missingIds = itemIds.filter((id) => !foundIds.has(id));
     if (missingIds.length > 0) {
-      throw new Error(`Items not found: ${missingIds.join(", ")}`);
+      throw new NotFoundError(`Items not found: ${missingIds.join(", ")}`);
     }
     return items;
   },

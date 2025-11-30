@@ -5,5 +5,12 @@ export default process.stdout.isTTY
       transport: {
         target: "pino-pretty",
       },
+      serializers: {
+        err: pino.stdSerializers.err,
+      },
     })
-  : pino();
+  : pino({
+      serializers: {
+        err: pino.stdSerializers.err,
+      },
+    });

@@ -1,4 +1,4 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+import { EntityManager, NotFoundError } from "@mikro-orm/postgresql";
 import {
   OrderCreateRequest,
   OrderUpdateRequest,
@@ -263,7 +263,9 @@ export const MANAGE_ORDER = {
         (orderItem) => orderItem.itemId === item.itemId,
       );
       if (!orderItemValue) {
-        throw new Error(`Quantity for item ${item.itemId} not provided`);
+        throw new NotFoundError(
+          `Quantity for item ${item.itemId} not provided`,
+        );
       }
       const quantity = orderItemValue.quantity;
       const itemName = orderItemValue.itemName ?? item.itemName;
